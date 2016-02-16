@@ -36,6 +36,21 @@ func main() {
 			Usage:  "Required SparkPost API key",
 			EnvVar: "SPARKPOST_API_KEY",
 		},
+		cli.StringFlag{
+			Name:  "username",
+			Value: "",
+			Usage: "Username it is more common to use apikey",
+		},
+		cli.StringFlag{
+			Name:  "password, p",
+			Value: "",
+			Usage: "Username it is more common to use apikey",
+		},
+		cli.StringFlag{
+			Name:  "verbose",
+			Value: "false",
+			Usage: "Dumps additional information to console",
+		},
 
 		// Metrics Parameters
 		cli.StringFlag{
@@ -101,7 +116,7 @@ func main() {
 		cli.StringFlag{
 			Name:  "to",
 			Value: "",
-			Usage: "Optional Datetime in format of YYYY-MM-DDTHH:MM. Example: 2014-07-20T09:00. Default: now.",
+			Usage: "Optional Datetime in format of YYYY-MM-DDTHH:MM. Example: 2016-02-10T00:00. Default: now.",
 		},
 		cli.StringFlag{
 			Name:  "transmission_ids",
@@ -116,9 +131,15 @@ func main() {
 			return
 		}
 
-		if c.String("apikey") == "" {
+		if c.String("apikey") == "" && c.String("username") == "" && c.String("password") == "" {
 			log.Fatalf("Error: SparkPost API key must be set\n")
 			return
+		}
+
+		isVerbose := false
+
+		if c.String("verbose") == "true" {
+			isVerbose = true
 		}
 
 		//println("SparkPost baseUrl: ", c.String("baseurl"))
@@ -126,7 +147,10 @@ func main() {
 		cfg := &sp.Config{
 			BaseUrl:    c.String("baseurl"),
 			ApiKey:     c.String("apikey"),
+			Username:   c.String("username"),
+			Password:   c.String("password"),
 			ApiVersion: 1,
+			Verbose:    isVerbose,
 		}
 
 		var client sp.Client
@@ -147,17 +171,17 @@ func main() {
 		e, err := client.SearchMessageEvents(parameters)
 		//e, err := client.SearchMessageEvents(nil)
 		if err != nil {
-			log.Fatalf("Error: %s\n", err)
+			log.Fatalf("Error: %s\n For additional information try using `--verbose true`\n", err)
 			return
 		} else if e.Errors != nil {
-			fmt.Println("ERROR: ", e.Errors)
+			fmt.Println("ERROR: %s.\nFor additional information try using `--verbose true`\n", e.Errors)
 		} else {
 
 			for index, element := range e.Results {
 				fmt.Printf("%d\t %s%s", index, client.EventAsString(element), "\n")
 				//fmt.Printf("%d\t %v\n", index, element)
 			}
-			
+
 			fmt.Printf("\t-------------------\n")
 			fmt.Printf("\tResult Count: %d\n", e.TotalCount)
 		}
