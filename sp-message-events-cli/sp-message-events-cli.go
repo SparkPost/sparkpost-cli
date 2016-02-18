@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -174,16 +173,16 @@ func main() {
 			log.Fatalf("Error: %s\n For additional information try using `--verbose true`\n", err)
 			return
 		} else if e.Errors != nil {
-			fmt.Println("ERROR: %s.\nFor additional information try using `--verbose true`\n", e.Errors)
+			log.Println("ERROR: %s.\nFor additional information try using `--verbose true`\n", e.Errors)
 		} else {
 
 			for index, element := range e.Results {
-				fmt.Printf("%d\t %s%s", index, client.EventAsString(element), "\n")
-				//fmt.Printf("%d\t %v\n", index, element)
+				log.Printf("%d\t %s%s", index, client.EventAsString(element), "\n")
+				//log.Printf("%d\t %v\n", index, element)
 			}
 
-			fmt.Printf("\t-------------------\n")
-			fmt.Printf("\tResult Count: %d\n", e.TotalCount)
+			log.Printf("\t-------------------\n")
+			log.Printf("\tResult Count: %d\n", e.TotalCount)
 		}
 	}
 	app.Run(os.Args)
