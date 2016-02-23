@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/codegangsta/cli"
 
@@ -10,10 +12,10 @@ import (
 )
 
 func main() {
-	
+
 	VALID_PARAMETERS := []string{
 		"from", "to", "domains", "campaigns", "templates", "nodes", "bindings",
-		"binding_groups", "protocols", "metrics", "timezone",  "limit", "order_by", 
+		"binding_groups", "protocols", "metrics", "timezone", "limit", "order_by",
 	}
 
 	app := cli.NewApp()
@@ -170,18 +172,129 @@ func main() {
 		e, err := client.QueryDeliverabilityMetrics(c.String("command"), parameters)
 
 		if err != nil {
-			log.Fatalf("Error: %s\n For additional information try using `--verbose true`\n", err)
+			log.Fatalf("ERROR: %s\n\nFor additional information try using `--verbose true`\n\n\n", err)
 			return
 		} else if e.Errors != nil {
-			log.Println("ERROR: %s.\nFor additional information try using `--verbose true`\n", e.Errors)
+			log.Fatalf("ERROR: %s.\n\nFor additional information try using `--verbose true`\n\n\n", e.Errors)
+			return
 		} else {
 
-			for index, element := range e.Results {
-				log.Printf("%d\t %s\n", index, client.MetricEventAsString(element))
-				//log.Printf("%d\t %v\n", index,  e.Results[index])
+			metrics := c.String("metrics")
+			log.Printf(metrics)
+			fields := strings.Split(metrics, ",")
+
+			// TODO: add an HTML output
+			csvHeaderPrinter(fields)
+
+			for _, element := range e.Results {
+				csvEntryPrinter(fields, c.String("command"), element)
+
 			}
 		}
 	}
 	app.Run(os.Args)
 
+}
+
+func csvEntryPrinter(fields []string, command string, event *sp.DeliverabilityMetricItem) {
+	row := ""
+
+	switch command {
+	case "domain":
+		row = fmt.Sprintf("%s%s, ", row, event.Domain)
+	case "campaign":
+		row = fmt.Sprintf("%s%s, ", row, event.CampaignId)
+	case "template":
+		row = fmt.Sprintf("%s%s, ", row, event.TemplateId)
+	case "time-series":
+		row = fmt.Sprintf("%s%s, ", row, event.TimeStamp)
+	case "watched-domain":
+		row = fmt.Sprintf("%s%s, ", row, event.WatchedDomain)
+	case "binding":
+		row = fmt.Sprintf("%s%s, ", row, event.Binding)
+	case "binding-group":
+		row = fmt.Sprintf("%s%s, ", row, event.BindingGroup)
+	default:
+		row = fmt.Sprintf("%sUnknown Commnad[%s], ", row, command)
+	}
+
+	for i := range fields {
+		switch fields[i] {
+		case "count_injected":
+			row = fmt.Sprintf("%s%d, ", row, event.CountInjected)
+		case "count_bounce":
+			row = fmt.Sprintf("%s%d, ", row, event.CountBounce)
+		case "count_rejected":
+			row = fmt.Sprintf("%s%d, ", row, event.CountRejected)
+		case "count_delivered":
+			row = fmt.Sprintf("%s%d, ", row, event.CountDelivered)
+		case "count_delivered_first":
+			row = fmt.Sprintf("%s%d, ", row, event.CountDeliveredFirst)
+		case "count_delivered_subsequent":
+			row = fmt.Sprintf("%s%d, ", row, event.CountDeliveredSubsequent)
+		case "total_delivery_time_first":
+			row = fmt.Sprintf("%s%d, ", row, event.TotalDeliveryTimeFirst)
+		case "total_delivery_time_subsequent":
+			row = fmt.Sprintf("%s%d, ", row, event.TotalDeliveryTimeSubsequent)
+		case "total_msg_volume":
+			row = fmt.Sprintf("%s%d, ", row, event.TotalMsgVolume)
+		case "count_policy_rejection":
+			row = fmt.Sprintf("%s%d, ", row, event.CountPolicyRejection)
+		case "count_generation_rejection":
+			row = fmt.Sprintf("%s%d, ", row, event.CountGenerationRejection)
+		case "count_generation_failed":
+			row = fmt.Sprintf("%s%d, ", row, event.CountGenerationFailed)
+		case "count_inband_bounce":
+			row = fmt.Sprintf("%s%d, ", row, event.CountInbandBounce)
+		case "count_outofband_bounce":
+			row = fmt.Sprintf("%s%d, ", row, event.CountOutofbandBounce)
+		case "count_soft_bounce":
+			row = fmt.Sprintf("%s%d, ", row, event.CountSoftBounce)
+		case "count_hard_bounce":
+			row = fmt.Sprintf("%s%d, ", row, event.CountHardBounce)
+		case "count_block_bounce":
+			row = fmt.Sprintf("%s%d, ", row, event.CountBlockBounce)
+		case "count_admin_bounce":
+			row = fmt.Sprintf("%s%d, ", row, event.CountAdminBounce)
+		case "count_undetermined_bounce":
+			row = fmt.Sprintf("%s%d, ", row, event.CountUndeterminedBounce)
+		case "count_delayed":
+			row = fmt.Sprintf("%s%d, ", row, event.CountDelayed)
+		case "count_delayed_first":
+			row = fmt.Sprintf("%s%d, ", row, event.CountDelayedFirst)
+		case "count_rendered":
+			row = fmt.Sprintf("%s%d, ", row, event.CountRendered)
+		case "count_unique_rendered":
+			row = fmt.Sprintf("%s%d, ", row, event.CountUniqueRendered)
+		case "count_unique_confirmed_opened":
+			row = fmt.Sprintf("%s%d, ", row, event.CountUniqueConfirmedOpened)
+		case "count_clicked":
+			row = fmt.Sprintf("%s%d, ", row, event.CountClicked)
+		case "count_unique_clicked":
+			row = fmt.Sprintf("%s%d, ", row, event.CountUniqueClicked)
+		case "count_targeted":
+			row = fmt.Sprintf("%s%d, ", row, event.CountTargeted)
+		case "count_sent":
+			row = fmt.Sprintf("%s%d, ", row, event.CountSent)
+		case "count_accepted":
+			row = fmt.Sprintf("%s%d, ", row, event.CountAccepted)
+		case "count_spam_complaint":
+			row = fmt.Sprintf("%s%d, ", row, event.CountSpamComplaint)
+		default:
+			row = fmt.Sprintf("unknown field: Invalid Field")
+
+		}
+
+	}
+
+	fmt.Println(row)
+}
+
+func csvHeaderPrinter(fields []string) {
+	row := "domain, "
+	for i := range fields {
+		row = fmt.Sprintf("%s%s, ", row, fields[i])
+	}
+
+	fmt.Println(row)
 }
