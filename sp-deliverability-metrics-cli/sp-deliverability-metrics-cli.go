@@ -176,13 +176,10 @@ func main() {
 			log.Println("ERROR: %s.\nFor additional information try using `--verbose true`\n", e.Errors)
 		} else {
 
-			for index := range e.Results {
-				log.Printf("%d\t %s%s", index, client.MetricEventAsString(e.Results[index]), "\n")
-				log.Printf("%d\t %v\n", index,  e.Results[index])
+			for index, element := range e.Results {
+				log.Printf("%d\t %s\n", index, client.MetricEventAsString(element))
+				//log.Printf("%d\t %v\n", index,  e.Results[index])
 			}
-
-			log.Printf("\t-------------------\n")
-			log.Printf("\tResult Count: %d\n", e.TotalCount)
 		}
 	}
 	app.Run(os.Args)
