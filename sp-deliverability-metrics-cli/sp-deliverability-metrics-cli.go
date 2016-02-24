@@ -70,14 +70,14 @@ func main() {
 			Usage: "Optional Datetime in format of YYYY-MM-DDTHH:MM. Example: 2016-02-10T00:00. Default: now.",
 		},
 		cli.StringFlag{
-			Name:  "domain, d",
+			Name:  "domains, d",
 			Value: "",
 			Usage: "Optional Comma-delimited list of domains to include Example: gmail.com,yahoo.com,hotmail.com.",
 		},
 		cli.StringFlag{
 			Name:  "campaigns, c",
 			Value: "",
-			Usage: "Optional Comma-delimited list of domains to include Example: gmail.com,yahoo.com,hotmail.com.",
+			Usage: "Optional Comma-delimited list of campaigns to include. Example: Black Friday",
 		},
 		cli.StringFlag{
 			Name:  "metrics, m",
