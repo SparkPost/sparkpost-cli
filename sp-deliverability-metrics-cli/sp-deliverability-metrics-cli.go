@@ -57,7 +57,7 @@ func main() {
 		cli.StringFlag{
 			Name:  "command",
 			Value: "domain",
-			Usage: "Optional one of domain, binding, binding-group, campaign, template, watched-domain, time-series",
+			Usage: "Optional one of domain, binding, binding-group, campaign, template, watched-domain, time-series, bounce-reason, bounce-reason/domain, bounce-classification, rejection-reason, rejection-reason/domain, delay-reason, delay-reason/domain, link-name, attempt",
 		},
 		cli.StringFlag{
 			Name:  "from, f",
