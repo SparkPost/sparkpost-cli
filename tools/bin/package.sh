@@ -13,7 +13,7 @@ echo "Base Dir: " $BASE_DIR
 rm -rf $BASE_DIR/package
 mkdir $BASE_DIR/package
 
-cp Usage.md $BASE_DIR/packageUsage.md
+cp Usage.md $BASE_DIR/package/Usage.md
 
 ###################
 # Build and Package CLI for OSX
