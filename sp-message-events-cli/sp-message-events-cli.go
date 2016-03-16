@@ -167,17 +167,15 @@ func main() {
 			}
 		}
 
-		e, err := client.SearchMessageEvents(parameters)
+		e, err := client.MessageEvents(parameters)
 		//e, err := client.SearchMessageEvents(nil)
 		if err != nil {
 			log.Fatalf("Error: %s\n For additional information try using `--verbose true`\n", err)
 			return
-		} else if e.Errors != nil {
-			log.Println("ERROR: %s.\nFor additional information try using `--verbose true`\n", e.Errors)
 		} else {
 
-			for index, element := range e.Results {
-				log.Printf("%d\t %s%s", index, client.EventAsString(element), "\n")
+			for index, element := range e.Events {
+				log.Printf("%d\t %s%s", index, element, "\n")
 				//log.Printf("%d\t %v\n", index, element)
 			}
 
