@@ -27,23 +27,23 @@ export GOOS="darwin"
 cd $BASE_DIR/sp-webhook-cli
 rm -f sp-webhook-cli
 go build
-cp sp-webhook-cli $BASE_DIR/package/osx
+mv sp-webhook-cli $BASE_DIR/package/osx
 
 
 cd $BASE_DIR/sp-deliverability-metrics-cli
 rm -f sp-deliverability-metrics-cli
 go build
-cp sp-deliverability-metrics-cli $BASE_DIR/package/osx
+mv sp-deliverability-metrics-cli $BASE_DIR/package/osx
 
 cd $BASE_DIR/sp-message-events-cli
 rm -f sp-message-events-cli
 go build
-cp sp-message-events-cli $BASE_DIR/package/osx
+mv sp-message-events-cli $BASE_DIR/package/osx
 
 
 
 ###################
-# Build and Package CLI for Linus
+# Build and Package CLI for Linux
 ###################
 
 
@@ -55,17 +55,46 @@ export GOOS="linux"
 cd $BASE_DIR/sp-webhook-cli
 rm -f sp-webhook-cli
 go build
-cp sp-webhook-cli $BASE_DIR/package/linux
+mv sp-webhook-cli $BASE_DIR/package/linux
 
 cd $BASE_DIR/sp-deliverability-metrics-cli
 rm -f sp-deliverability-metrics-cli
 go build
-cp sp-deliverability-metrics-cli $BASE_DIR/package/linux
+mv sp-deliverability-metrics-cli $BASE_DIR/package/linux
 
 cd $BASE_DIR/sp-message-events-cli
 rm -f sp-message-events-cli
 go build
-cp sp-message-events-cli $BASE_DIR/package/linux
+mv sp-message-events-cli $BASE_DIR/package/linux
+
+
+##################
+# Build and Package CLI for Windowss
+###################
+
+
+echo "Building for Windows"
+
+mkdir $BASE_DIR/package/windows
+export GOOS="windows"
+
+cd $BASE_DIR/sp-webhook-cli
+rm -f sp-webhook-cli.exe
+go build
+mv sp-webhook-cli.exe $BASE_DIR/package/windows
+
+cd $BASE_DIR/sp-deliverability-metrics-cli
+rm -f sp-deliverability-metrics-cli.exe
+go build
+mv sp-deliverability-metrics-cli.exe $BASE_DIR/package/windows
+
+cd $BASE_DIR/sp-message-events-cli
+rm -f sp-message-events-cli.exe
+go build
+mv sp-message-events-cli.exe $BASE_DIR/package/windows
+
+
+
 
 
 ###################
@@ -74,5 +103,6 @@ cp sp-message-events-cli $BASE_DIR/package/linux
 echo "Done..."
 echo ""
 echo "See $BASE_DIR/package for binary files"
+open $BASE_DIR/package
 
 
