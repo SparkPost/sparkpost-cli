@@ -10,35 +10,35 @@ BASE_DIR=`pwd`
 
 echo "Base Dir: " $BASE_DIR
 
-rm -rf $BASE_DIR/package
-mkdir $BASE_DIR/package
+rm -rf $BASE_DIR/sparkpost_cli
+mkdir $BASE_DIR/sparkpost_cli
 
-cp Usage.md $BASE_DIR/package/Usage.md
+cp Usage.md $BASE_DIR/sparkpost_cli/Usage.md
 
 ###################
 # Build and Package CLI for OSX
 ###################
 echo "Building for OSX"
 
-mkdir $BASE_DIR/package/osx
+mkdir $BASE_DIR/sparkpost_cli/osx
 export GOOS="darwin"
 
 
 cd $BASE_DIR/sp-webhook-cli
 rm -f sp-webhook-cli
 go build
-mv sp-webhook-cli $BASE_DIR/package/osx
+mv sp-webhook-cli $BASE_DIR/sparkpost_cli/osx
 
 
 cd $BASE_DIR/sp-deliverability-metrics-cli
 rm -f sp-deliverability-metrics-cli
 go build
-mv sp-deliverability-metrics-cli $BASE_DIR/package/osx
+mv sp-deliverability-metrics-cli $BASE_DIR/sparkpost_cli/osx
 
 cd $BASE_DIR/sp-message-events-cli
 rm -f sp-message-events-cli
 go build
-mv sp-message-events-cli $BASE_DIR/package/osx
+mv sp-message-events-cli $BASE_DIR/sparkpost_cli/osx
 
 
 
@@ -49,23 +49,23 @@ mv sp-message-events-cli $BASE_DIR/package/osx
 
 echo "Building for Linux"
 
-mkdir $BASE_DIR/package/linux
+mkdir $BASE_DIR/sparkpost_cli/linux
 export GOOS="linux"
 
 cd $BASE_DIR/sp-webhook-cli
 rm -f sp-webhook-cli
 go build
-mv sp-webhook-cli $BASE_DIR/package/linux
+mv sp-webhook-cli $BASE_DIR/sparkpost_cli/linux
 
 cd $BASE_DIR/sp-deliverability-metrics-cli
 rm -f sp-deliverability-metrics-cli
 go build
-mv sp-deliverability-metrics-cli $BASE_DIR/package/linux
+mv sp-deliverability-metrics-cli $BASE_DIR/sparkpost_cli/linux
 
 cd $BASE_DIR/sp-message-events-cli
 rm -f sp-message-events-cli
 go build
-mv sp-message-events-cli $BASE_DIR/package/linux
+mv sp-message-events-cli $BASE_DIR/sparkpost_cli/linux
 
 
 ##################
@@ -75,23 +75,23 @@ mv sp-message-events-cli $BASE_DIR/package/linux
 
 echo "Building for Windows"
 
-mkdir $BASE_DIR/package/windows
+mkdir $BASE_DIR/sparkpost_cli/windows
 export GOOS="windows"
 
 cd $BASE_DIR/sp-webhook-cli
 rm -f sp-webhook-cli.exe
 go build
-mv sp-webhook-cli.exe $BASE_DIR/package/windows
+mv sp-webhook-cli.exe $BASE_DIR/sparkpost_cli/windows
 
 cd $BASE_DIR/sp-deliverability-metrics-cli
 rm -f sp-deliverability-metrics-cli.exe
 go build
-mv sp-deliverability-metrics-cli.exe $BASE_DIR/package/windows
+mv sp-deliverability-metrics-cli.exe $BASE_DIR/sparkpost_cli/windows
 
 cd $BASE_DIR/sp-message-events-cli
 rm -f sp-message-events-cli.exe
 go build
-mv sp-message-events-cli.exe $BASE_DIR/package/windows
+mv sp-message-events-cli.exe $BASE_DIR/sparkpost_cli/windows
 
 
 
@@ -102,7 +102,7 @@ mv sp-message-events-cli.exe $BASE_DIR/package/windows
 ###################
 echo "Done..."
 echo ""
-echo "See $BASE_DIR/package for binary files"
-open $BASE_DIR/package
+echo "See $BASE_DIR/sparkpost_cli for binary files"
+open $BASE_DIR/sparkpost_cli
 
 
