@@ -17,7 +17,15 @@ If you are using the CLI command against SparkPost.com you do not need to set `S
 
 ## Webhook CLI
 
-The web hook CLI is a wrapper around the [Webhooks API](https://developers.sparkpost.com/api/#/reference/webhooks) which The the means to list, review and query web hook.
+The web hook CLI is a wrapper around the [Webhooks API](https://developers.sparkpost.com/api/#/reference/webhooks) which The means to list, review and query web hook.
+
+| Command | Description |
+|---|---|
+| list | List currently extant webhooks |
+| query | Retrieve details about a webhook by specifying its id in the URI path |
+| status | Retrieve status information regarding batches that have been generated for the given webhook by specifying its id in the URI path |
+
+
 
 ### Webhook List
 
