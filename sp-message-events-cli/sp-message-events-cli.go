@@ -14,7 +14,7 @@ func main() {
 	VALID_PARAMETERS := []string{
 		"bounce_classes", "campaign_ids", "events", "friendly_froms", "from",
 		"message_ids", "page", "per_page", "reason", "recipients", "template_ids",
-		"timezone", "to", "transmission_ids",
+		"timezone", "to", "transmission_ids", "subaccounts",
 	}
 
 	app := cli.NewApp()
@@ -121,6 +121,11 @@ func main() {
 			Name:  "transmission_ids",
 			Value: "",
 			Usage: "Optional Comma-delimited list of transmission ID's to search (i.e. id generated during creation of a transmission). Example: 65832150921904138.",
+		},
+		cli.StringFlag{
+			Name:  "subaccounts",
+			Value: "",
+			Usage: "Optional Comma-delimited list of subaccount ID's to search. Example: 101",
 		},
 	}
 	app.Action = func(c *cli.Context) {

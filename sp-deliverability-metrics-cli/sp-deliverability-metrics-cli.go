@@ -15,7 +15,7 @@ func main() {
 
 	VALID_PARAMETERS := []string{
 		"from", "to", "domains", "campaigns", "templates", "nodes", "bindings",
-		"binding_groups", "protocols", "metrics", "timezone", "limit", "order_by",
+		"binding_groups", "protocols", "metrics", "timezone", "limit", "order_by", "subaccounts",
 	}
 
 	app := cli.NewApp()
@@ -123,6 +123,11 @@ func main() {
 			Name:  "order_by",
 			Value: "",
 			Usage: "Optional metric by which to order results Example: count_injected",
+		},
+		cli.StringFlag{
+			Name:  "subaccounts",
+			Value: "",
+			Usage: "Optional Comma-delimited list of subaccount ID's to search. Example: 101",
 		},
 	}
 	app.Action = func(c *cli.Context) {

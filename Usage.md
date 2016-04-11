@@ -12,12 +12,12 @@ If you are using the CLI command against SparkPost.com you do not need to set `S
 
 * export SPARKPOST_API_KEY="VALID API KEY"
 	* or use command line argument `--apikey "VALID API KEY"`
-* export SPARKPOST_API_KEY="http://YOURSERVER.com"
+* export SPARKPOST_BASEURL="http://YOURSERVER.com"
 	* or use command line argument `--baseurl "http://YOURSERVER.com"`
 
 ## Webhook CLI
 
-The web hook CLI is a wrapper around the [Webhooks API](https://developers.sparkpost.com/api/#/reference/webhooks) which The means to list, review and query web hook.
+The webhook CLI is a wrapper around [Webhooks API](https://developers.sparkpost.com/api/#/reference/webhooks). It allows you to list, review and query your webhooks.
 
 | Command | Description |
 |---|---|
@@ -148,7 +148,7 @@ SparkPost and SparkPost (Elite) log copious amounts of statistical, real-time da
 
 ### Deliverability by Domain
 
-Provides aggregate metrics grouped by domain over the time window specified. Use `--metrics` and `--domains` to control what columns or domains are returned. It is sometimes useful to pipe the output to a cvs file and open with Excel.
+Provides aggregate metrics grouped by domain over the time window specified. Use `--metrics` and `--domains` to control what columns or domains are returned. It is sometimes useful to pipe the output to a CSV file and open with Excel.
 
 * `./sp-deliverability-metrics-cli --from "2014-02-01T00:00"`
 * `./sp-deliverability-metrics-cli --from "2014-02-01T00:00" --command "domain"`
@@ -168,7 +168,7 @@ Provides aggregate metrics grouped by binding over the time window specified.
 
 [see](https://developers.sparkpost.com/api/#/reference/metrics/deliverability-metrics-by-binding)
 
-**Note:** This endpoint is available in SparkPost Elite or Momentum only.Provides aggregate metrics grouped by binding group over the time window specified.
+**Note:** This endpoint is available in SparkPost Elite or Momentum only. Provides aggregate metrics grouped by binding group over the time window specified.
 
 * ``./sp-deliverability-metrics-cli --from "2014-02-01T00:00" --command "binding-group"``
 
@@ -184,7 +184,7 @@ Provides aggregate metrics grouped by campaign over the time window specified.
 
 ### Deliverability Metrics by Template
 
-[See](https://developers.sparkpost.com/api/#/reference/metrics/deliverability-metrics-by-binding-group/deliverability-metrics-by-template)
+[see](https://developers.sparkpost.com/api/#/reference/metrics/deliverability-metrics-by-binding-group/deliverability-metrics-by-template)
 
 Provides aggregate metrics grouped by template over the time window specified.
 
@@ -192,7 +192,7 @@ Provides aggregate metrics grouped by template over the time window specified.
 
 ### Deliverability Metrics by Watched Domain
 
-[See](https://developers.sparkpost.com/api/#/reference/metrics/deliverability-metrics-by-campaign/deliverability-metrics-by-watched-domain)
+[see](https://developers.sparkpost.com/api/#/reference/metrics/deliverability-metrics-by-campaign/deliverability-metrics-by-watched-domain)
 
 Provides aggregate metrics grouped by watched domain over the time window specified. The difference between domain and watched domain is that watched domains are comprised of the top 99% domains in the world.
 
@@ -201,7 +201,7 @@ Provides aggregate metrics grouped by watched domain over the time window specif
 
 ### Time Series
 
-[See](https://developers.sparkpost.com/api/#/reference/metrics/deliverability-metrics-by-template/time-series-metrics)
+[see](https://developers.sparkpost.com/api/#/reference/metrics/deliverability-metrics-by-template/time-series-metrics)
 
 Provides deliverability metrics ordered by a precision of time.The following table describes the validation for the precision parameter:
 
