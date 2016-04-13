@@ -23,6 +23,15 @@ If you are using the CLI command against SparkPost.com you do not need to set `S
 
 
 
+## Contribute
+
+We welcome your contributions!  See [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to help out.
+
+## Change Log
+
+[See ChangeLog here](https://github.com/SparkPost/sparkpost-cli/releases)
+
+
 ## Usage Examples
 
 # Momentum/SparkPost CLI Tools
@@ -336,11 +345,4 @@ The following options are available for the Message Event CLI:
 |--transmission_ids||Optional Comma-delimited list of transmission ID's to search (i.e. id generated during creation of a transmission). Example: 65832150921904138.|
 
 
-## Contribute
-
-We welcome your contributions!  See [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to help out.
-
-## Change Log
-
-[See ChangeLog here](releases)
 
