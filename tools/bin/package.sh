@@ -13,7 +13,7 @@ echo "Base Dir: " $BASE_DIR
 rm -rf $BASE_DIR/sparkpost_cli
 mkdir $BASE_DIR/sparkpost_cli
 
-cp Usage.md $BASE_DIR/sparkpost_cli/Usage.md
+cp README.md $BASE_DIR/sparkpost_cli/Usage.md
 
 ###################
 # Build and Package CLI for OSX
@@ -41,6 +41,11 @@ go build
 mv sp-message-events-cli $BASE_DIR/sparkpost_cli/osx
 
 
+cd $BASE_DIR/sp-suppression-list-cli	
+rm -f sp-suppression-list-cli	
+go build
+mv sp-suppression-list-cli $BASE_DIR/sparkpost_cli/osx
+
 
 ###################
 # Build and Package CLI for Linux
@@ -67,6 +72,10 @@ rm -f sp-message-events-cli
 go build
 mv sp-message-events-cli $BASE_DIR/sparkpost_cli/linux
 
+cd $BASE_DIR/sp-suppression-list-cli	
+rm -f sp-suppression-list-cli	
+go build
+mv sp-suppression-list-cli $BASE_DIR/sparkpost_cli/linux
 
 ##################
 # Build and Package CLI for Windowss
@@ -93,7 +102,10 @@ rm -f sp-message-events-cli.exe
 go build
 mv sp-message-events-cli.exe $BASE_DIR/sparkpost_cli/windows
 
-
+cd $BASE_DIR/sp-suppression-list-cli	
+rm -f sp-suppression-list-cli.exe	
+go build
+mv sp-suppression-list-cli.exe $BASE_DIR/sparkpost_cli/windows
 
 
 
