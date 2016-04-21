@@ -12,15 +12,25 @@ The official SparkPost CLI for the [SparkPost API](https://www.sparkpost.com/api
 
 ## Environment
 
-All the CLI commands will check `SPARKPOST_APIKEY` and `SPARKPOST_BASEURL`.
+All the CLI commands will check environment variables `SPARKPOST_APIKEY` and `SPARKPOST_BASEURL`.
 
-If you are using the CLI command against SparkPost.com you do not need to set `SPARKPOST_BASEURL `.
+**NOTE:** If you are using `https://api.sparkpost.com` there is no need to set `SPARKPOST_BASEURL` since that is the default value.
+
+### Linux/OSX
 
 * export SPARKPOST_API_KEY="VALID API KEY"
 	* or use command line argument `--apikey "VALID API KEY"`
 * export SPARKPOST_BASEURL="http://YOURSERVER.com"
 	* or use command line argument `--baseurl "http://YOURSERVER.com"`
 
+### Windows
+
+See [here](https://www.microsoft.com/resources/documentation/windows/xp/all/proddocs/en-us/sysdm_advancd_environmnt_addchange_variable.mspx?mfr=true) for inststructions on setting up environment variable in Windows.
+
+* `C:\>set SPARKPOST_API_KEY=VALID_API_KEY`
+	* or use command line argument `--apikey "VALID_API_KEY"`
+* `C:\>set SPARKPOST_BASEURL="http://YOURSERVER.com"`
+	* or use command line argument `--baseurl "http://YOURSERVER.com"`
 
 
 ## Contribute
@@ -38,7 +48,7 @@ We welcome your contributions!  See [CONTRIBUTING.md](CONTRIBUTING.md) for detai
 
 [Source Code](https://github.com/SparkPost/sparkpost-cli)
 
-The following CLI command use the RESTful API to interact with Momentum and SparkPost.
+The following CLI commands internally use the RESTful API to interact with Momentum and SparkPost.
 
 ## Environment
 
@@ -50,6 +60,88 @@ If you are using the CLI command against SparkPost.com you do not need to set `S
 	* or use command line argument `--apikey "VALID API KEY"`
 * export SPARKPOST_BASEURL="http://YOURSERVER.com"
 	* or use command line argument `--baseurl "http://YOURSERVER.com"`
+
+### Suppression CLI
+
+The suppression CLI defaults to listing the current suppression list. Pass `--command <COMMAND>` to invoke other operations. Here are the possible commands:
+
+
+| Command | Description |
+|---|---|
+| list | (default) Lists the entries in the SparkPost suppression list  |
+| retrieve | Retrieve the suppression status for a specific recipient by specifying the recipient’s email address  |
+| search | Perform a filtered search for entries in your customer-specific exclusion list. |
+| mandrill | Use this to import the blacklist from Mandrill |
+
+#### List Suppression List
+
+This command is used to dump the current suppression list:
+
+`sp-suppression-list-cli --command list`
+
+The output will be a comma delimited output with the following format:
+
+`Recipient, Transactional, NonTransactional, Source, Updated, Created`
+
+
+#### Retrieve Entry
+
+Retrieve the suppression status for a specific recipient by specifying the recipient’s email address in `--recipient` parameter.
+
+`sp-suppression-list-cli --command retrieve --recipient name@example.com`
+
+The result will have the following format:
+
+``Recipient, Transactional, NonTransactional, Source, Updated, Created, Description`
+
+Example output:
+
+`name@example.com, false, true, Manually Added,2016-04-11T20:15:55+00:00, 2016-04-11T20:15:55+00:00, MBL: name@example.com hard-bounce"smtp;550 5.1.1 The email account that you tried to reach does not exist. Please try double-checking the recipient's email address for typos or unnecessary spaces. Learn more at https://support.google.com/mail/answer/`
+
+
+#### Search Suppression List
+
+Perform a filtered search for entries in your customer-specific exclusion list.
+
+`sp-suppression-list-cli --command search -from 2016-04-01T00:00:00 --types non_transactional `
+
+#### Import Mandrill Blacklist
+
+Import Mandrill blacklist that you get from [here](https://mandrill.zendesk.com/hc/en-us/articles/205582997).
+
+`sp-suppression-list-cli --command mandrill --file PATH_TO_MANDRILL_BLACKLIST.csv`
+
+If the list was successfully imported the CLI will return `OK`.
+
+
+#### Help
+
+```
+NAME:
+   sp-suppression-list-cli - SparkPost suppression list CLI
+
+USAGE:
+   sp-suppression-list-cli [global options] command [command options] [arguments...]
+     
+COMMANDS:
+   help, h	Shows a list of commands or help for one command
+   
+GLOBAL OPTIONS:
+   --baseurl, -u "https://api.sparkpost.com"	Optional baseUrl for SparkPost. [$SPARKPOST_BASEURL]
+   --apikey, -k 				Required SparkPost API key [$SPARKPOST_API_KEY]
+   --verbose "false"				Dumps additional information to console
+   --file, -f 					Mandrill blocklist CSV. See https://mandrill.zendesk.com/hc/en-us/articles/205582997
+   --command "list"				Optional one of list, retrieve, search, delete, mandrill
+   --recipient 					Recipient email address. Example rcpt_1@example.com
+   --from 					Optional datetime the entries were last updated, in the format of YYYY-MM-DDTHH:mm:ssZ (2015-04-10T00:00:00)
+   --to 					Optional datetime the entries were last updated, in the format YYYY-MM-DDTHH:mm:ssZ (2015-04-10T00:00:00)
+   --types 					Optional types of entries to include in the search, i.e. entries with "transactional" and/or "non_transactional" keys set to true
+   --limit 					Optional maximum number of results to return. Must be between 1 and 100000. Default value is 100000
+   --help, -h					show help
+   --version, -v				print the version
+
+```
+
 
 ### Webhook CLI
 
