@@ -39,8 +39,8 @@ func main() {
 	app := cli.NewApp()
 
 	app.Version = "0.0.1"
-	app.Name = "mandril-sparkpost-cli"
-	app.Usage = "Import Mandrill blacklist into SparkPost suppression list"
+	app.Name = "suppression-sparkpost-cli"
+	app.Usage = "SparkPost suppression list cli"
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:   "baseurl, u",
@@ -206,22 +206,19 @@ func main() {
 
 			var entries = []sp.SuppressionEntry{}
 
-			lineNumber := 0
-
 			blackListRow := csv.NewReader(bufio.NewReader(f))
+			blackListRow.FieldsPerRecord = 8;
+
 			for {
 				record, err := blackListRow.Read()
 				if err == io.EOF {
 					break
 				}
 
-				lineNumber++
+				if err != nil {
+					log.Fatalf("ERROR: Failed to process '%s':\n\t%s", file, err)
 
-				if len(record) < 7 {
-					// The Mandrill export sometime produces bad rows
-					// Give user enough information to try and fix the problem
-					log.Fatalf("ERROR: in file LN: %d \n%s.", lineNumber, record)
-					return
+					return;
 				}
 
 				if record[EMAIL_COL] == "email" {
