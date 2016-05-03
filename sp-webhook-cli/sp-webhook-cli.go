@@ -151,7 +151,7 @@ func doStatus(client *sp.Client, parameters map[string]string, id string) {
 }
 
 func doItemQuery(client *sp.Client, parameters map[string]string, id string) {
-	e, err := client.QueryWebhook(id, parameters)
+	e, err := client.WebhookQueryWithHeaders(id, parameters, nil)
 
 	if err != nil {
 		log.Fatalf("ERROR: %s\n\nFor additional information try using `--verbose true`\n\n\n", err)
@@ -167,7 +167,7 @@ func doItemQuery(client *sp.Client, parameters map[string]string, id string) {
 }
 
 func doList(client *sp.Client, parameters map[string]string) {
-	e, err := client.ListWebhooks(parameters)
+	e, err := client.WebhooksListWithHeaders(parameters, nil)
 
 	if err != nil {
 		log.Fatalf("ERROR: %s\n\nFor additional information try using `--verbose true`\n\n\n", err)

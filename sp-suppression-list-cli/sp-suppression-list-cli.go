@@ -261,7 +261,7 @@ func main() {
 
 				if len(entries) > (1024 * 100) {
 					fmt.Printf("Uploading batch %d\n", batchCount)
-					err = client.SuppressionInsertOrUpdate(entries)
+					err = client.SuppressionUpsert(entries)
 
 					if err != nil {
 						log.Fatalf("ERROR: %s\n\nFor additional information try using `--verbose true`\n\n\n", err)
@@ -274,7 +274,7 @@ func main() {
 
 			if len(entries) > 0 {
 				fmt.Printf("Uploading batch %d\n", batchCount)
-				err = client.SuppressionInsertOrUpdate(entries)
+				err = client.SuppressionUpsert(entries)
 
 				if err != nil {
 					log.Fatalf("ERROR: %s\n\nFor additional information try using `--verbose true`\n\n\n", err)
@@ -340,7 +340,7 @@ func main() {
 
 				if len(entries) > (1024 * 100) {
 					fmt.Printf("Uploading batch %d\n", batchCount)
-					err = client.SuppressionInsertOrUpdate(entries)
+					err = client.SuppressionUpsert(entries)
 
 					if err != nil {
 						log.Fatalf("ERROR: %s\n\nFor additional information try using `--verbose true`\n\n\n", err)
@@ -354,7 +354,7 @@ func main() {
 
 			if len(entries) > 0 {
 				fmt.Printf("Uploading batch %d\n", batchCount)
-				err = client.SuppressionInsertOrUpdate(entries)
+				err = client.SuppressionUpsert(entries)
 
 				if err != nil {
 					log.Fatalf("ERROR: %s\n\nFor additional information try using `--verbose true`\n\n\n", err)
