@@ -9,7 +9,9 @@ import (
 	"io"
 	"log"
 	"os"
+	"strconv"
 	"strings"
+	"time"
 )
 
 // Column mapping for Mandrill Blacklist
@@ -102,6 +104,17 @@ func main() {
 			Value: "",
 			Usage: "Optional maximum number of results to return. Must be between 1 and 100000. Default value is 100000",
 		},
+
+		cli.StringFlag{
+			Name:  "batchsize",
+			Value: "100000",
+			Usage: "Optional the max suppression records to upload per request. Default value is 100000",
+		},
+		cli.StringFlag{
+			Name:  "delay",
+			Value: "0",
+			Usage: "Optional how long to wait in seconds between suppression list requests",
+		},
 	}
 	app.Action = func(c *cli.Context) {
 
@@ -121,6 +134,9 @@ func main() {
 			ApiVersion: 1,
 			Verbose:    isVerbose,
 		}
+
+		batchSize, _ := strconv.ParseInt(c.String("batchsize"), 10, 0)
+		batchDelay, _ := strconv.ParseInt(c.String("delay"), 10, 0)
 
 		var client sp.Client
 		err := client.Init(cfg)
@@ -218,6 +234,7 @@ func main() {
 			blackListRow := csv.NewReader(bufio.NewReader(f))
 			blackListRow.FieldsPerRecord = 8
 
+
 			for {
 				record, err := blackListRow.Read()
 				if err == io.EOF {
@@ -235,7 +252,10 @@ func main() {
 					continue
 				}
 
-				if record[MANDRILL_REASON_COL] != "hard-bounce" {
+				if record[MANDRILL_REASON_COL] != "hard-bounce" &&
+					record[MANDRILL_REASON_COL] != "unsub" &&
+					record[MANDRILL_REASON_COL] != "spam" &&
+					record[MANDRILL_REASON_COL] != "custom" {
 					// Ignore soft-bounce
 					continue
 				}
@@ -259,9 +279,9 @@ func main() {
 
 				entries = append(entries, entry)
 
-				if len(entries) > (1024 * 100) {
+				if len(entries) > int(batchSize) {
 					fmt.Printf("Uploading batch %d\n", batchCount)
-					err = client.SuppressionUpsert(entries)
+					err = client.SuppressionInsertOrUpdate(entries)
 
 					if err != nil {
 						log.Fatalf("ERROR: %s\n\nFor additional information try using `--verbose true`\n\n\n", err)
@@ -269,20 +289,25 @@ func main() {
 					}
 					entries = []sp.SuppressionEntry{}
 					batchCount++
+					if batchDelay > 0 {
+						fmt.Printf("Sleeping")
+						time.Sleep( time.Duration(batchDelay) * time.Second)
+						fmt.Printf("Awake")
+					}
 				}
 			}
 
 			if len(entries) > 0 {
 				fmt.Printf("Uploading batch %d\n", batchCount)
-				err = client.SuppressionUpsert(entries)
+				err = client.SuppressionInsertOrUpdate(entries)
 
 				if err != nil {
 					log.Fatalf("ERROR: %s\n\nFor additional information try using `--verbose true`\n\n\n", err)
 					return
-				} 
+				}
 			}
 			fmt.Println("DONE")
-			
+
 		case "sendgrid":
 			file := c.String("file")
 			if file == "" {
@@ -340,7 +365,7 @@ func main() {
 
 				if len(entries) > (1024 * 100) {
 					fmt.Printf("Uploading batch %d\n", batchCount)
-					err = client.SuppressionUpsert(entries)
+					err = client.SuppressionInsertOrUpdate(entries)
 
 					if err != nil {
 						log.Fatalf("ERROR: %s\n\nFor additional information try using `--verbose true`\n\n\n", err)
@@ -354,7 +379,7 @@ func main() {
 
 			if len(entries) > 0 {
 				fmt.Printf("Uploading batch %d\n", batchCount)
-				err = client.SuppressionUpsert(entries)
+				err = client.SuppressionInsertOrUpdate(entries)
 
 				if err != nil {
 					log.Fatalf("ERROR: %s\n\nFor additional information try using `--verbose true`\n\n\n", err)
