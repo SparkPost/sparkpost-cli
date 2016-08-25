@@ -125,7 +125,7 @@ func main() {
 		cli.StringFlag{
 			Name:  "subaccounts",
 			Value: "",
-			Usage: "Optional Comma-delimited list of subaccount ID's to search. Example: 101",
+			Usage: "Optional Comma-delimited list of subaccount ID's to search. Example: 101. Passing '0' will show data for only the master account",
 		},
 	}
 	app.Action = func(c *cli.Context) {

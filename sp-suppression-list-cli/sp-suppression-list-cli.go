@@ -73,6 +73,11 @@ func main() {
 			Usage: "Mandrill blocklist CSV. See https://mandrill.zendesk.com/hc/en-us/articles/205582997",
 		},
 		cli.StringFlag{
+			Name:  "subaccount, s",
+			Value: "",
+			Usage: "Optional subaccount ID",
+		},
+		cli.StringFlag{
 			Name:  "command",
 			Value: "list",
 			Usage: "Optional one of list, retrieve, search, delete, mandrill, sendgrid",
@@ -143,6 +148,10 @@ func main() {
 		if err != nil {
 			log.Fatalf("SparkPost client init failed: %s\n", err)
 			return
+		}
+
+		if c.String("subaccount") != "" {
+			client.SetHeader("X-MSYS-SUBACCOUNT", c.String("subaccount"))
 		}
 
 		parameters := make(map[string]string)

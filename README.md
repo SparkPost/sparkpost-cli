@@ -12,7 +12,7 @@ The official SparkPost CLI for the [SparkPost API](https://www.sparkpost.com/api
 
 ## Environment
 
-All the CLI commands will check environment variables `SPARKPOST_APIKEY` and `SPARKPOST_BASEURL`.
+All the CLI commands will check environment variables `SPARKPOST_API_KEY` and `SPARKPOST_BASEURL`.
 
 **NOTE:** If you are using `https://api.sparkpost.com` there is no need to set `SPARKPOST_BASEURL` since that is the default value.
 
@@ -127,18 +127,22 @@ COMMANDS:
    help, h	Shows a list of commands or help for one command
    
 GLOBAL OPTIONS:
-   --baseurl, -u "https://api.sparkpost.com"	Optional baseUrl for SparkPost. [$SPARKPOST_BASEURL]
-   --apikey, -k 				Required SparkPost API key [$SPARKPOST_API_KEY]
-   --verbose "false"				Dumps additional information to console
-   --file, -f 					Mandrill blocklist CSV. See https://mandrill.zendesk.com/hc/en-us/articles/205582997
-   --command "list"				Optional one of list, retrieve, search, delete, mandrill
-   --recipient 					Recipient email address. Example rcpt_1@example.com
-   --from 					Optional datetime the entries were last updated, in the format of YYYY-MM-DDTHH:mm:ssZ (2015-04-10T00:00:00)
-   --to 					Optional datetime the entries were last updated, in the format YYYY-MM-DDTHH:mm:ssZ (2015-04-10T00:00:00)
-   --types 					Optional types of entries to include in the search, i.e. entries with "transactional" and/or "non_transactional" keys set to true
-   --limit 					Optional maximum number of results to return. Must be between 1 and 100000. Default value is 100000
-   --help, -h					show help
-   --version, -v				print the version
+GLOBAL OPTIONS:
+   --baseurl value, -u value     Optional baseUrl for SparkPost. (default: "https://api.sparkpost.com") [$SPARKPOST_BASEURL]
+   --apikey value, -k value      Required SparkPost API key [$SPARKPOST_API_KEY]
+   --verbose value               Dumps additional information to console (default: "false")
+   --file value, -f value        Mandrill blocklist CSV. See https://mandrill.zendesk.com/hc/en-us/articles/205582997
+   --subaccount value, -s value  Optional subaccount ID
+   --command value               Optional one of list, retrieve, search, delete, mandrill, sendgrid (default: "list")
+   --recipient value             Recipient email address. Example rcpt_1@example.com
+   --from value                  Optional datetime the entries were last updated, in the format of YYYY-MM-DDTHH:mm:ssZ (2015-04-10T00:00:00)
+   --to value                    Optional datetime the entries were last updated, in the format YYYY-MM-DDTHH:mm:ssZ (2015-04-10T00:00:00)
+   --types value                 Optional types of entries to include in the search, i.e. entries with "transactional" and/or "non_transactional" keys set to true
+   --limit value                 Optional maximum number of results to return. Must be between 1 and 100000. Default value is 100000
+   --batchsize value             Optional the max suppression records to upload per request. Default value is 100000 (default: "100000")
+   --delay value                 Optional how long to wait in seconds between suppression list requests (default: "0")
+   --help, -h                    show help
+   --version, -v                 print the version
 
 ```
 
@@ -248,17 +252,17 @@ BatchId: "24d44870-db40-11e5-b1e3-63a3a57c2125"
 
 
 ```
---baseurl, -u "https://api.sparkpost.com"	Optional baseUrl for SparkPost. [$SPARKPOST_BASEURL]
---apikey, -k 				Required SparkPost API key [$SPARKPOST_API_KEY]
---username 				Username this is a special case it is more common to use apices
---password, -p 			Username this is a special it is more common to use apices
---verbose "false"		Dumps additional information to console
---command, -c "list"	Optional one of list, query, status. Default is "list"
---timezone, --tz 		Optional Standard timezone identification string, defaults to UTC Example: America/New_York.
---id 					Optional UUID identifying a web hook Example: 12affc24-f183-11e3-9234-3c15c2c818c2.
---limit 				Optional Maximum number of results to return. Defaults to 1000. Example: 1000.
---help, -h				show help
---version, -v			print the version
+   --baseurl value, -u value     Optional baseUrl for SparkPost. (default: "https://api.sparkpost.com") [$SPARKPOST_BASEURL]
+   --apikey value, -k value      Required SparkPost API key [$SPARKPOST_API_KEY]
+   --username value              Username this is a special case it is more common to use apikey
+   --password value, -p value    Username this is a special it is more common to use apikey
+   --verbose value               Dumps additional information to console (default: "false")
+   --command value, -c value     Optional one of list, query, status. Default is "list" (default: "list")
+   --timezone value, --tz value  Optional Standard timezone identification string, defaults to UTC Example: America/New_York.
+   --id value                    Optional UUID identifying a webhook Example: 12affc24-f183-11e3-9234-3c15c2c818c2.
+   --limit value                 Optional Maximum number of results to return. Defaults to 1000. Example: 1000.
+   --help, -h                    show help
+   --version, -v                 print the version
 
 ```
 
@@ -344,28 +348,28 @@ Provides deliverability metrics ordered by a precision of time.The following tab
 #### Deliverability Usage
 
 ```
---baseurl, -u            Optional baseUrl for SparkPost. [$SPARKPOST_BASEURL]
---apikey, -k 			 Required SparkPost API key [$SPARKPOST_API_KEY]
---username 				 Username this is a special case it is more common to use apikey
---password, -p 			 Username this is a special it is more common to use apikey
---verbose "false"		 Dumps additional information to console
---command "domain"		 Optional one of domain, binding, binding-group, campaign, template, watched-domain, time-series
---from, -f 				 Required Datetime in format of YYYY-MM-DDTHH:MM. Example: 2016-02-10T08:00. Default: One hour ago
---to 					 Optional Datetime in format of YYYY-MM-DDTHH:MM. Example: 2016-02-10T00:00. Default: now.
---domains, -d 			 Optional Comma-delimited list of domains to include Example: gmail.com,yahoo.com,hotmail.com.
---campaigns, -c 		 Optional Comma-delimited list of campaigns to include. Example: Black Friday
---metrics, -m            Required Comma-delimited list of metric name for filtering
---templates 			 Optional comma-delimited list of template IDs to include Example: summer-sale
---nodes 				 Optional comma-delimited list of nodes to include ( Note: SparkPost Elite only ) Example: Email-MSys-1,Email-MSys-2,Email-MSys-3
---bindings 				 Optional comma-delimited list of bindings to include (Note: SparkPost Elite only) Example: Confirmation
---binding_groups 		 Optional comma-delimited list of binding groups to include (Note: SparkPost Elite only) Example: Transaction
---protocols 			 Optional comma-delimited list of protocols for filtering (Note: SparkPost Elite only) Example: smtp
---timezone 				 Standard timezone identification string, defaults to UTC Example: America/New_York.
---limit 				 Optional maximum number of results to return Example: 5
---order_by 				 Optional metric by which to order results Example: count_injected
---precision              Precision of timeseries data returned Example: day. Possible values:  1min , 5min , 15min , hour , 12hr , day , week , month .
---help, -h				 show help
---version, -v			 print the version
+   --baseurl value, -u value    Optional baseUrl for SparkPost. (default: "https://api.sparkpost.com") [$SPARKPOST_BASEURL]
+   --apikey value, -k value     Required SparkPost API key [$SPARKPOST_API_KEY]
+   --username value             Username this is a special case it is more common to use apikey
+   --password value, -p value   Username this is a special it is more common to use apikey
+   --verbose value              Dumps additional information to console (default: "false")
+   --command value              Optional one of domain, binding, binding-group, campaign, template, watched-domain, time-series, bounce-reason, bounce-reason/domain, bounce-classification, rejection-reason, rejection-reason/domain, delay-reason, delay-reason/domain, link-name, attempt (default: "domain")
+   --from value, -f value       Required Datetime in format of YYYY-MM-DDTHH:MM. Example: 2016-02-10T08:00. Default: One hour ago
+   --to value                   Optional Datetime in format of YYYY-MM-DDTHH:MM. Example: 2016-02-10T00:00. Default: now.
+   --domains value, -d value    Optional Comma-delimited list of domains to include Example: gmail.com,yahoo.com,hotmail.com.
+   --campaigns value, -c value  Optional Comma-delimited list of campaigns to include. Example: Black Friday
+   --metrics value, -m value    Required Comma-delimited list of metrics for filtering (default: "count_injected,count_bounce,count_rejected,count_delivered,count_delivered_first,count_delivered_subsequent,total_delivery_time_first,total_delivery_time_subsequent,total_msg_volume,count_policy_rejection,count_generation_rejection,count_generation_failed,count_inband_bounce,count_outofband_bounce,count_soft_bounce,count_hard_bounce,count_block_bounce,count_admin_bounce,count_undetermined_bounce,count_delayed,count_delayed_first,count_rendered,count_unique_rendered,count_unique_confirmed_opened,count_clicked,count_unique_clicked,count_targeted,count_sent,count_accepted,count_spam_complaint")
+   --templates value            Optioanl comma-delimited list of template IDs to include Example: summer-sale
+   --nodes value                Optional comma-delimited list of nodes to include ( Note: SparkPost Elite only ) Example: Email-MSys-1,Email-MSys-2,Email-MSys-3
+   --bindings value             Optional comma-delimited list of bindings to include (Note: SparkPost Elite only) Example: Confirmation
+   --binding_groups value       Optional comma-delimited list of binding groups to include (Note: SparkPost Elite only) Example: Transaction
+   --protocols value            Optional comma-delimited list of protocols for filtering (Note: SparkPost Elite only) Example: smtp
+   --timezone value             Standard timezone identification string, defaults to UTC Example: America/New_York.
+   --limit value                Optional maximum number of results to return Example: 5
+   --order_by value             Optional metric by which to order results Example: count_injected
+   --subaccounts value          Optional Comma-delimited list of subaccount ID's to search. Example: 101
+   --help, -h                   show help
+   --version, -v                print the version
 
 ```
 
