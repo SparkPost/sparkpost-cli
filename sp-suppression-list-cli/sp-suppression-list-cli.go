@@ -5,7 +5,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	sp "github.com/SparkPost/gosparkpost"
-	"github.com/codegangsta/cli"
+	"github.com/urfave/cli"
 	"io"
 	"log"
 	"os"

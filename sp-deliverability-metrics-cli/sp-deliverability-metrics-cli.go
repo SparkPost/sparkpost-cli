@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/codegangsta/cli"
+	"github.com/urfave/cli"
 
 	sp "github.com/SparkPost/gosparkpost"
 )
