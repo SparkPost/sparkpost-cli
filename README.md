@@ -113,6 +113,9 @@ Import Mandrill blacklist that you get from [here](https://mandrill.zendesk.com/
 
 If the list was successfully imported the CLI will return `OK`.
 
+### Import SendGrid Suppressions
+
+Follow [SendGrid Suppressions import guide](Usage_Sendgrid_Suppressions.md).
 
 #### Help
 
@@ -122,10 +125,10 @@ NAME:
 
 USAGE:
    sp-suppression-list-cli [global options] command [command options] [arguments...]
-     
+
 COMMANDS:
    help, h	Shows a list of commands or help for one command
-   
+
 GLOBAL OPTIONS:
    --baseurl, -u "https://api.sparkpost.com"	Optional baseUrl for SparkPost. [$SPARKPOST_BASEURL]
    --apikey, -k 				Required SparkPost API key [$SPARKPOST_API_KEY]
@@ -400,7 +403,7 @@ Provides deliverability metrics ordered by a precision of time.The following tab
 |`count_targeted`|
 |`count_sent`|
 |`count_accepted`|
-|`count_spam_complaint`|	
+|`count_spam_complaint`|
 
 
 ### Message Events
@@ -435,6 +438,3 @@ The following options are available for the Message Event CLI:
 |--timezone||Optional Standard timezone identification string. Example: America/New_York. Default: UTC|
 |--to||Optional Datetime in format of YYYY-MM-DDTHH:MM. Example: 2016-02-10T00:00. Default: now.|
 |--transmission_ids||Optional Comma-delimited list of transmission ID's to search (i.e. id generated during creation of a transmission). Example: 65832150921904138.|
-
-
-

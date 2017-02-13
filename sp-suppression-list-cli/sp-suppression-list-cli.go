@@ -68,7 +68,7 @@ func main() {
 		cli.StringFlag{
 			Name:  "file, f",
 			Value: "",
-			Usage: "Mandrill blocklist CSV. See https://mandrill.zendesk.com/hc/en-us/articles/205582997",
+			Usage: "Compatible blacklist CSV file. See README.md for more info.",
 		},
 		cli.StringFlag{
 			Name:  "command",
