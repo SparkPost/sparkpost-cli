@@ -113,9 +113,17 @@ Import Mandrill blacklist that you get from [here](https://mandrill.zendesk.com/
 
 If the list was successfully imported the CLI will return `OK`.
 
-### Import SendGrid Suppressions
+#### Import SendGrid Suppressions
 
-Follow [SendGrid Suppressions import guide](Usage_Sendgrid_Suppressions.md).
+- Export suppressions from SendGrid.
+- Remove any columns other than **email** and **created** and they're arranged in same order (email, created).
+- Run the following command to import to SparkPost
+
+```
+sp-suppression-list-cli --command sendgrid -f PATH_TO_SENDGRID_EXPORT.csv
+```
+Note: Replace `PATH_TO_SENDGRID_EXPORT.csv` with your CSV file.
+
 
 #### Help
 
