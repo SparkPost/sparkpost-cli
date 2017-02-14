@@ -120,7 +120,7 @@ If the list was successfully imported the CLI will return `OK`.
 - Run the following command to import to SparkPost
 
 ```
-sp-suppression-list-cli --command sendgrid -f PATH_TO_SENDGRID_EXPORT.csv
+sp-suppression-list-cli --command sendgrid --file PATH_TO_SENDGRID_EXPORT.csv
 ```
 Note: Replace `PATH_TO_SENDGRID_EXPORT.csv` with your CSV file.
 
