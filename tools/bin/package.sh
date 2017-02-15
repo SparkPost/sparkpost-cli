@@ -14,6 +14,7 @@ rm -rf $BASE_DIR/sparkpost_cli
 mkdir $BASE_DIR/sparkpost_cli
 
 cp README.md $BASE_DIR/sparkpost_cli/Usage.md
+cp sendgrid-suppressions.md $BASE_DIR/sparkpost_cli/sendgrid-suppressions.md
 
 ###################
 # Build and Package CLI for OSX
