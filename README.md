@@ -124,6 +124,7 @@ sp-suppression-list-cli --command sendgrid --file PATH_TO_SENDGRID_EXPORT.csv
 ```
 Note: Replace `PATH_TO_SENDGRID_EXPORT.csv` with your CSV file.
 
+Check [sendgrid-suppressions.md](sendgrid-suppressions.md) for more info.
 
 #### Help
 
