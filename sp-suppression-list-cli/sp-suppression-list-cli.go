@@ -4,30 +4,31 @@ import (
 	"bufio"
 	"encoding/csv"
 	"fmt"
-	sp "github.com/SparkPost/gosparkpost"
-	"github.com/codegangsta/cli"
 	"io"
 	"log"
 	"os"
 	"strings"
+
+	sp "github.com/SparkPost/gosparkpost"
+	"github.com/codegangsta/cli"
 )
 
 // Column mapping for Mandrill Blacklist
 const (
-	MANDRILL_EMAIL_COL       = 0
-	MANDRILL_REASON_COL      = 1
-	MANDRILL_DETAIL_COL      = 2
-	MANDRILL_CREATED_COL     = 3
-	MANDRILL_EXPIRES_AT_COL  = 4
-	MANDRILL_LAST_EVENT_COL  = 5
-	MANDRILL_EXPIRES_AT2_COL = 6
-	MANDRILL_SUBACCOUNT_COL  = 7
+	MandrillEmailCol      = 0
+	MandrillReasonCol     = 1
+	MandrillDetailCol     = 2
+	MandrillCreatedCol    = 3
+	MandrillExpiresAtCol  = 4
+	MandrillLastEventCol  = 5
+	MandrillExpiresAt2Col = 6
+	MandrillSubAccountCol = 7
 )
 
 // Column mapping for SendGrid Blacklist
 const (
-	SENDGRID_EMAIL_COL = 0
-	SENDGRID_CREATED   = 1
+	SendgridEmailCol = 0
+	SendgridCreated  = 1
 )
 
 func check(e error) {
@@ -38,13 +39,13 @@ func check(e error) {
 
 func main() {
 
-	VALID_PARAMETERS := []string{
-		"from", "to", "types", "limit",
+	ValidParameters := []string{
+		"to", "from", "domain", "cursor", "limit", "per_page", "page", "sources", "types", "description",
 	}
 
 	app := cli.NewApp()
 
-	app.Version = "0.0.1"
+	app.Version = "0.0.2"
 	app.Name = "suppression-sparkpost-cli"
 	app.Usage = "SparkPost suppression list cli"
 	app.Flags = []cli.Flag{
@@ -131,24 +132,23 @@ func main() {
 
 		parameters := make(map[string]string)
 
-		for i, val := range VALID_PARAMETERS {
+		for i, val := range ValidParameters {
 
-			if c.String(VALID_PARAMETERS[i]) != "" {
+			if c.String(ValidParameters[i]) != "" {
 				parameters[val] = c.String(val)
 			}
 		}
 
 		switch c.String("command") {
 		case "list":
-			e, err := client.SuppressionList()
+			listWrapper, _, err := client.SuppressionList()
 
 			if err != nil {
 				log.Fatalf("ERROR: %s\n\nFor additional information try using `--verbose true`\n\n\n", err)
 				return
-			} else {
-				csvEntryPrinter(e, true)
-
 			}
+			csvEntryPrinter(listWrapper, true)
+
 		case "retrieve":
 			recpipient := c.String("recipient")
 			if recpipient == "" {
@@ -156,34 +156,32 @@ func main() {
 				return
 			}
 
-			e, err := client.SuppressionRetrieve(recpipient)
+			listWrapper, _, err := client.SuppressionRetrieve(recpipient)
 
 			if err != nil {
 				log.Fatalf("ERROR: %s\n\nFor additional information try using `--verbose true`\n\n\n", err)
 				return
-			} else {
-				csvEntryPrinter(e, false)
-
 			}
+			csvEntryPrinter(listWrapper, false)
+
 		case "search":
 			parameters := make(map[string]string)
 
-			for i, val := range VALID_PARAMETERS {
+			for i, val := range ValidParameters {
 
-				if c.String(VALID_PARAMETERS[i]) != "" {
+				if c.String(ValidParameters[i]) != "" {
 					parameters[val] = c.String(val)
 				}
 			}
 
-			e, err := client.SuppressionSearch(parameters)
+			listWrapper, _, err := client.SuppressionSearch(parameters)
 
 			if err != nil {
 				log.Fatalf("ERROR: %s\n\nFor additional information try using `--verbose true`\n\n\n", err)
 				return
-			} else {
-				csvEntryPrinter(e, true)
-
 			}
+			csvEntryPrinter(listWrapper, true)
+
 		case "delete":
 			recpipient := c.String("recipient")
 			if recpipient == "" {
@@ -196,10 +194,9 @@ func main() {
 			if err != nil {
 				log.Fatalf("ERROR: %s\n\nFor additional information try using `--verbose true`\n\n\n", err)
 				return
-			} else {
-				fmt.Println("OK")
-
 			}
+			fmt.Println("OK")
+
 		case "mandrill":
 			fmt.Printf("Processing: %s\n", c.String("file"))
 			file := c.String("file")
@@ -230,38 +227,38 @@ func main() {
 					return
 				}
 
-				if record[MANDRILL_EMAIL_COL] == "email" {
+				if record[MandrillEmailCol] == "email" {
 					// Skip over header row
 					continue
 				}
 
-				if record[MANDRILL_REASON_COL] != "hard-bounce" {
+				if record[MandrillReasonCol] != "hard-bounce" {
 					// Ignore soft-bounce
 					continue
 				}
 
-				if strings.Count(record[MANDRILL_EMAIL_COL], "@") != 1 {
-					fmt.Printf("WARN: Ignoring '%s'. It is not a valid email address.\n", record[MANDRILL_EMAIL_COL])
+				if strings.Count(record[MandrillEmailCol], "@") != 1 {
+					fmt.Printf("WARN: Ignoring '%s'. It is not a valid email address.\n", record[MandrillEmailCol])
 					continue
 				}
 
 				entry := sp.SuppressionEntry{}
 
-				if record[MANDRILL_EMAIL_COL] == "" {
+				if record[MandrillEmailCol] == "" {
 					// Must have email as it is suppression list primary key
 					continue
 				}
 
-				entry.Email = record[MANDRILL_EMAIL_COL]
+				entry.Email = record[MandrillEmailCol]
 				entry.Transactional = false
 				entry.NonTransactional = true
-				entry.Description = fmt.Sprintf("MBL: %s", record[MANDRILL_DETAIL_COL])
+				entry.Description = fmt.Sprintf("MBL: %s", record[MandrillDetailCol])
 
 				entries = append(entries, entry)
 
 				if len(entries) > (1024 * 100) {
 					fmt.Printf("Uploading batch %d\n", batchCount)
-					err = client.SuppressionInsertOrUpdate(entries)
+					_, err := client.SuppressionUpsert(entries)
 
 					if err != nil {
 						log.Fatalf("ERROR: %s\n\nFor additional information try using `--verbose true`\n\n\n", err)
@@ -274,15 +271,15 @@ func main() {
 
 			if len(entries) > 0 {
 				fmt.Printf("Uploading batch %d\n", batchCount)
-				err = client.SuppressionInsertOrUpdate(entries)
+				_, err := client.SuppressionUpsert(entries)
 
 				if err != nil {
 					log.Fatalf("ERROR: %s\n\nFor additional information try using `--verbose true`\n\n\n", err)
 					return
-				} 
+				}
 			}
 			fmt.Println("DONE")
-			
+
 		case "sendgrid":
 			file := c.String("file")
 			if file == "" {
@@ -312,26 +309,26 @@ func main() {
 					return
 				}
 
-				if record[SENDGRID_EMAIL_COL] == "email" {
+				if record[SendgridEmailCol] == "email" {
 					// Skip over header row
 					continue
 				}
 
 				entry := sp.SuppressionEntry{}
 
-				if record[SENDGRID_EMAIL_COL] == "" {
+				if record[SendgridEmailCol] == "" {
 					// Must have email as it is suppression list primary key
 					continue
 				}
 
 				// SendGrid suppression lists are very dirty and tend to have invalid data. Some examples of invalid addresses are:
 				// 	#02232014, gmail.com, To, 8/27/2015, name@yahoo.comett@domain.com"
-				if strings.Count(record[MANDRILL_EMAIL_COL], "@") != 1 {
-					fmt.Printf("WARN: Ignoring '%s'. It is not a valid email address.\n", record[MANDRILL_EMAIL_COL])
+				if strings.Count(record[SendgridEmailCol], "@") != 1 {
+					fmt.Printf("WARN: Ignoring '%s'. It is not a valid email address.\n", record[SendgridEmailCol])
 					continue
 				}
 
-				entry.Email = record[SENDGRID_EMAIL_COL]
+				entry.Email = record[SendgridEmailCol]
 				entry.Transactional = false
 				entry.NonTransactional = true
 				entry.Description = fmt.Sprintf("SBL: imported from SendGrid")
@@ -340,7 +337,7 @@ func main() {
 
 				if len(entries) > (1024 * 100) {
 					fmt.Printf("Uploading batch %d\n", batchCount)
-					err = client.SuppressionInsertOrUpdate(entries)
+					_, err := client.SuppressionUpsert(entries)
 
 					if err != nil {
 						log.Fatalf("ERROR: %s\n\nFor additional information try using `--verbose true`\n\n\n", err)
@@ -354,7 +351,7 @@ func main() {
 
 			if len(entries) > 0 {
 				fmt.Printf("Uploading batch %d\n", batchCount)
-				err = client.SuppressionInsertOrUpdate(entries)
+				_, err := client.SuppressionUpsert(entries)
 
 				if err != nil {
 					log.Fatalf("ERROR: %s\n\nFor additional information try using `--verbose true`\n\n\n", err)

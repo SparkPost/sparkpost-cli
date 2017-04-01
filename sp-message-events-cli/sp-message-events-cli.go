@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"time"
 
 	"github.com/codegangsta/cli"
 
@@ -11,7 +12,7 @@ import (
 
 func main() {
 
-	VALID_PARAMETERS := []string{
+	validParameters := []string{
 		"bounce_classes", "campaign_ids", "events", "friendly_froms", "from",
 		"message_ids", "page", "per_page", "reason", "recipients", "template_ids",
 		"timezone", "to", "transmission_ids", "subaccounts",
@@ -20,7 +21,7 @@ func main() {
 	app := cli.NewApp()
 	app.Version = "0.0.1"
 	app.Name = "sparkpost-message-event-cli"
-	app.Usage = "SparkPost Message Event CLI"
+	app.Usage = "SparkPost Message Event CLI \n\n\tSee also https://developers.sparkpost.com/api/message-events.html#message-events-message-events-get"
 	app.Flags = []cli.Flag{
 		// Core Client Configuration
 		cli.StringFlag{
@@ -49,6 +50,11 @@ func main() {
 			Name:  "verbose",
 			Value: "false",
 			Usage: "Dumps additional information to console",
+		},
+		cli.StringFlag{
+			Name:  "pause",
+			Value: "0",
+			Usage: "Seconds to pause before fetching next page of results. Used to guard against rate limit errors.",
 		},
 
 		// Metrics Parameters
@@ -165,29 +171,79 @@ func main() {
 
 		parameters := make(map[string]string)
 
-		for i, val := range VALID_PARAMETERS {
+		for i, val := range validParameters {
 
-			if c.String(VALID_PARAMETERS[i]) != "" {
+			if c.String(validParameters[i]) != "" {
 				parameters[val] = c.String(val)
 			}
 		}
 
-		e, err := client.MessageEvents(parameters)
-		//e, err := client.SearchMessageEvents(nil)
+		eventPage := &sp.EventsPage{}
+		eventPage.Params = parameters
+
+		r, err := client.MessageEventsSearch(eventPage)
+		totalCount := eventPage.TotalCount
+
 		if err != nil {
 			log.Fatalf("Error: %s\n For additional information try using `--verbose true`\n", err)
 			return
-		} else {
+		}
 
-			for index, element := range e.Events {
-				log.Printf("%d\t %s%s", index, element, "\n")
-				//log.Printf("%d\t %v\n", index, element)
+		sleepTimeout := time.Duration(c.Int64("pause")) * time.Second
+		for {
+			if eventPage == nil {
+				if isVerbose {
+					log.Printf("Event page nil")
+				}
+				break
 			}
 
-			log.Printf("\t-------------------\n")
-			log.Printf("\tResult Count: %d\n", e.TotalCount)
+			if eventPage.Errors != nil {
+				log.Fatalf("Error: %v\n For additional information try using `--verbose true`\n", eventPage.Errors)
+				break
+			}
+
+			if len(eventPage.Events) == 0 {
+				if isVerbose {
+					log.Printf("Dump: %v", r)
+					log.Printf("No more events")
+				}
+				break
+			}
+
+			printEvents(eventPage)
+
+			if c.String("page") != "" {
+				break
+			}
+
+			if isVerbose {
+				log.Printf("NextPage(): %s", eventPage.NextPage)
+			}
+			if sleepTimeout != 0 {
+				if isVerbose {
+					log.Printf("Sleep: %d seconds", c.Int64("pause"))
+				}
+				time.Sleep(sleepTimeout)
+			}
+			eventPage, r, err = eventPage.Next()
+			if err != nil {
+				log.Fatalf("Error: %s\n For additional information try using `--verbose true`\n", err)
+				break
+			}
+
 		}
+
+		log.Printf("\t-------------------\n")
+		log.Printf("\tResult Count: %d\n", totalCount)
+
 	}
 	app.Run(os.Args)
 
+}
+
+func printEvents(eventPage *sp.EventsPage) {
+	for index, event := range eventPage.Events {
+		log.Printf("%d\t %s%s", index, event, "\n")
+	}
 }

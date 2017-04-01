@@ -12,7 +12,7 @@ import (
 
 func main() {
 
-	VALID_PARAMETERS := []string{
+	ValidParameters := []string{
 		"timezone", "limit",
 	}
 
@@ -110,14 +110,13 @@ func main() {
 
 		parameters := make(map[string]string)
 
-		for i, val := range VALID_PARAMETERS {
+		for i, val := range ValidParameters {
 
-			if c.String(VALID_PARAMETERS[i]) != "" {
+			if c.String(ValidParameters[i]) != "" {
 				parameters[val] = c.String(val)
 			}
 		}
 
-		// TODO: If Command == list
 		switch c.String("command") {
 		case "list":
 			doList(&client, parameters)
@@ -135,50 +134,71 @@ func main() {
 }
 
 func doStatus(client *sp.Client, parameters map[string]string, id string) {
-	e, err := client.WebhookStatus(id, parameters)
+
+	statusWrapper := &sp.WebhookStatusWrapper{}
+	statusWrapper.Params = parameters
+	statusWrapper.ID = id
+
+	e, err := client.WebhookStatus(statusWrapper)
 
 	if err != nil {
 		log.Fatalf("ERROR: %s\n\nFor additional information try using `--verbose true`\n\n\n", err)
 		return
 	} else if e.Errors != nil {
-		log.Fatalf("ERROR: %s.\n\nFor additional information try using `--verbose true`\n\n\n", e.Errors)
+		log.Fatalf("ERROR: %v.\n\nFor additional information try using `--verbose true`\n\n\n", e.Errors)
 		return
-	} else {
-		for _, element := range e.Results {
-			webhookStatusPrinter(element)
-		}
+	} else if statusWrapper.Errors != nil {
+		log.Fatalf("ERROR: %v.\n\nFor additional information try using `--verbose true`\n\n\n", statusWrapper.Errors)
+		return
+	}
+
+	for _, element := range statusWrapper.Results {
+		webhookStatusPrinter(element)
 	}
 }
 
 func doItemQuery(client *sp.Client, parameters map[string]string, id string) {
-	e, err := client.QueryWebhook(id, parameters)
+	queryWrapper := &sp.WebhookQueryWrapper{}
+	queryWrapper.Params = parameters
+	queryWrapper.ID = id
+
+	e, err := client.QueryWebhook(queryWrapper)
 
 	if err != nil {
 		log.Fatalf("ERROR: %s\n\nFor additional information try using `--verbose true`\n\n\n", err)
 		return
 	} else if e.Errors != nil {
-		log.Fatalf("ERROR: %s.\n\nFor additional information try using `--verbose true`\n\n\n", e.Errors)
+		log.Fatalf("ERROR: %v.\n\nFor additional information try using `--verbose true`\n\n\n", e.Errors)
 		return
-	} else {
-		// for _, element := range e.Results {
-		webhookDetailPrinter(e.Results)
-		// }
+	} else if queryWrapper.Errors != nil {
+		log.Fatalf("ERROR: %v.\n\nFor additional information try using `--verbose true`\n\n\n", queryWrapper.Errors)
+		return
 	}
+
+	// for _, element := range e.Results {
+	webhookDetailPrinter(queryWrapper.Results)
+	// }
 }
 
 func doList(client *sp.Client, parameters map[string]string) {
-	e, err := client.ListWebhooks(parameters)
+	listWrapper := &sp.WebhookListWrapper{}
+	listWrapper.Params = parameters
+
+	e, err := client.Webhooks(listWrapper)
 
 	if err != nil {
 		log.Fatalf("ERROR: %s\n\nFor additional information try using `--verbose true`\n\n\n", err)
 		return
 	} else if e.Errors != nil {
-		log.Fatalf("ERROR: %s.\n\nFor additional information try using `--verbose true`\n\n\n", e.Errors)
+		log.Fatalf("ERROR: %v.\n\nFor additional information try using `--verbose true`\n\n\n", e.Errors)
 		return
-	} else {
-		for _, element := range e.Results {
-			listSummaryPrinter(element)
-		}
+	} else if listWrapper.Errors != nil {
+		log.Fatalf("ERROR: %v.\n\nFor additional information try using `--verbose true`\n\n\n", listWrapper.Errors)
+		return
+	}
+
+	for _, element := range listWrapper.Results {
+		listSummaryPrinter(element)
 	}
 }
 
@@ -225,7 +245,7 @@ func webhookDetailPrinter(event *sp.WebhookItem) {
 func webhookStatusPrinter(event *sp.WebhookStatus) {
 	row := ""
 	row = fmt.Sprintf("BatchId: \"%s\"\n", event.BatchID)
-	row = fmt.Sprintf("%s\tTime:       %s\n", row, event.Ts)
+	row = fmt.Sprintf("%s\tTime:       %s\n", row, event.Timestamp)
 	row = fmt.Sprintf("%s\tAttempts:   %d\n", row, event.Attempts)
 	row = fmt.Sprintf("%s\tRespCode:   %s\n", row, event.ResponseCode)
 
