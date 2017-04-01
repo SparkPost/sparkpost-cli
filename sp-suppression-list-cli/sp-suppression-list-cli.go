@@ -47,7 +47,7 @@ func main() {
 
 	app.Version = "0.0.2"
 	app.Name = "suppression-sparkpost-cli"
-	app.Usage = "SparkPost suppression list cli"
+	app.Usage = "SparkPost suppression list cli\n\n\tSee https://developers.sparkpost.com/api/suppression-list.html"
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:   "baseurl, u",

@@ -20,7 +20,7 @@ func main() {
 
 	app.Version = "0.0.1"
 	app.Name = "sparkpost-message-event-cli"
-	app.Usage = "SparkPost Message Event CLI"
+	app.Usage = "SparkPost Message Event CLI\n\n\tSee https://developers.sparkpost.com/api/webhooks.html"
 	app.Flags = []cli.Flag{
 		// Core Client Configuration
 		cli.StringFlag{
