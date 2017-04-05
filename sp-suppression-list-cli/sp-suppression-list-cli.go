@@ -103,6 +103,36 @@ func main() {
 			Value: "",
 			Usage: "Optional maximum number of results to return. Must be between 1 and 100000. Default value is 100000",
 		},
+		cli.StringFlag{
+			Name:  "page",
+			Value: "",
+			Usage: "Optional results page number to return. Used with per_page for paging through result. Example: 25. Default: 1",
+		},
+		cli.StringFlag{
+			Name:  "per_page",
+			Value: "",
+			Usage: "Optional number of results to return per page. Must be between 1 and 10,000 (inclusive). Example: 100. Default: 1000.",
+		},
+		cli.StringFlag{
+			Name:  "cursor",
+			Value: "",
+			Usage: "Optional the results cursor location to return, to start paging with cursor, use the value of ‘initial’. When cursor is provided the page parameter is ignored. ( Note: SparkPost only). Example initial",
+		},
+		cli.StringFlag{
+			Name:  "domain",
+			Value: "",
+			Usage: "Domain of entries to include in the search. ( Note: SparkPost only). Example yahoo.com",
+		},
+		cli.StringFlag{
+			Name:  "sources",
+			Value: "",
+			Usage: "Types of entries to include in the search, i.e. entries that are transactional or non_transactional",
+		},
+		cli.StringFlag{
+			Name:  "description",
+			Value: "",
+			Usage: "Description of the entries to include in the search, i.e descriptions that include the text submitted. ( Note: SparkPost only)",
+		},
 	}
 	app.Action = func(c *cli.Context) {
 
@@ -133,22 +163,64 @@ func main() {
 		parameters := make(map[string]string)
 
 		for i, val := range ValidParameters {
-
 			if c.String(ValidParameters[i]) != "" {
 				parameters[val] = c.String(val)
 			}
 		}
 
 		switch c.String("command") {
-		case "list":
-			listWrapper, _, err := client.SuppressionList()
+		case "list", "search":
+			var err error
+			suppressionPage := &sp.SuppressionPage{}
 
+			if c.String("command") == "search" {
+				parameters := make(map[string]string)
+				parameters["cursor"] = "initial"
+
+				for i, val := range ValidParameters {
+
+					if c.String(ValidParameters[i]) != "" {
+						parameters[val] = c.String(val)
+					}
+				}
+
+				suppressionPage.Params = parameters
+				_, err = client.SuppressionSearch(suppressionPage)
+			} else {
+				_, err = client.SuppressionList(suppressionPage)
+			}
 			if err != nil {
 				log.Fatalf("ERROR: %s\n\nFor additional information try using `--verbose true`\n\n\n", err)
 				return
 			}
-			csvEntryPrinter(listWrapper, true)
 
+			for {
+
+				if suppressionPage.Errors != nil {
+					log.Fatalf("Error: %v\n For additional information try using `--verbose true`\n", suppressionPage.Errors)
+					break
+				}
+
+				csvEntryPrinter(suppressionPage, true)
+
+				// If user requested a specific page don't page through rest of results
+				if c.String("page") != "" {
+					return
+				}
+
+				if suppressionPage.NextPage == "" {
+					return
+				}
+
+				if isVerbose {
+					log.Printf("NextPage(): %s", suppressionPage.NextPage)
+				}
+				suppressionPage, _, err = suppressionPage.Next()
+				if err != nil {
+					log.Fatalf("ERROR: %s\n\nFor additional information try using `--verbose true`\n\n\n", err)
+					return
+				}
+			}
 		case "retrieve":
 			recpipient := c.String("recipient")
 			if recpipient == "" {
@@ -156,31 +228,14 @@ func main() {
 				return
 			}
 
-			listWrapper, _, err := client.SuppressionRetrieve(recpipient)
+			suppressionPage := &sp.SuppressionPage{}
+			_, err := client.SuppressionRetrieve(recpipient, suppressionPage)
 
 			if err != nil {
 				log.Fatalf("ERROR: %s\n\nFor additional information try using `--verbose true`\n\n\n", err)
 				return
 			}
-			csvEntryPrinter(listWrapper, false)
-
-		case "search":
-			parameters := make(map[string]string)
-
-			for i, val := range ValidParameters {
-
-				if c.String(ValidParameters[i]) != "" {
-					parameters[val] = c.String(val)
-				}
-			}
-
-			listWrapper, _, err := client.SuppressionSearch(parameters)
-
-			if err != nil {
-				log.Fatalf("ERROR: %s\n\nFor additional information try using `--verbose true`\n\n\n", err)
-				return
-			}
-			csvEntryPrinter(listWrapper, true)
+			csvEntryPrinter(suppressionPage, false)
 
 		case "delete":
 			recpipient := c.String("recipient")
@@ -371,8 +426,8 @@ func main() {
 
 }
 
-func csvEntryPrinter(suppressionList *sp.SuppressionListWrapper, summary bool) {
-	entries := suppressionList.Results
+func csvEntryPrinter(suppressionPage *sp.SuppressionPage, summary bool) {
+	entries := suppressionPage.Results
 
 	if summary {
 		fmt.Printf("Recipient, Transactional, NonTransactional, Source, Updated, Created\n")
