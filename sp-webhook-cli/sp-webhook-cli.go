@@ -18,7 +18,7 @@ func main() {
 
 	app := cli.NewApp()
 
-	app.Version = "0.0.1"
+	app.Version = "0.0.2"
 	app.Name = "sparkpost-message-event-cli"
 	app.Usage = "SparkPost Message Event CLI\n\n\tSee https://developers.sparkpost.com/api/webhooks.html"
 	app.Flags = []cli.Flag{

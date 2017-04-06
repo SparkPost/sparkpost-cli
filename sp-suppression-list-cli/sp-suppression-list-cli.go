@@ -263,7 +263,7 @@ func main() {
 			f, err := os.Open(file)
 			check(err)
 
-			var entries = []sp.SuppressionEntry{}
+			var entries = []sp.WritableSuppressionEntry{}
 
 			batchCount := 1
 
@@ -297,16 +297,15 @@ func main() {
 					continue
 				}
 
-				entry := sp.SuppressionEntry{}
+				entry := sp.WritableSuppressionEntry{}
 
 				if record[MandrillEmailCol] == "" {
 					// Must have email as it is suppression list primary key
 					continue
 				}
 
-				entry.Email = record[MandrillEmailCol]
-				entry.Transactional = false
-				entry.NonTransactional = true
+				entry.Recipient = record[MandrillEmailCol]
+				entry.Type = "non_transactional"
 				entry.Description = fmt.Sprintf("MBL: %s", record[MandrillDetailCol])
 
 				entries = append(entries, entry)
@@ -319,7 +318,7 @@ func main() {
 						log.Fatalf("ERROR: %s\n\nFor additional information try using `--verbose true`\n\n\n", err)
 						return
 					}
-					entries = []sp.SuppressionEntry{}
+					entries = []sp.WritableSuppressionEntry{}
 					batchCount++
 				}
 			}
@@ -345,7 +344,7 @@ func main() {
 			f, err := os.Open(file)
 			check(err)
 
-			var entries = []sp.SuppressionEntry{}
+			var entries = []sp.WritableSuppressionEntry{}
 
 			batchCount := 1
 
@@ -369,7 +368,7 @@ func main() {
 					continue
 				}
 
-				entry := sp.SuppressionEntry{}
+				entry := sp.WritableSuppressionEntry{}
 
 				if record[SendgridEmailCol] == "" {
 					// Must have email as it is suppression list primary key
@@ -383,9 +382,8 @@ func main() {
 					continue
 				}
 
-				entry.Email = record[SendgridEmailCol]
-				entry.Transactional = false
-				entry.NonTransactional = true
+				entry.Recipient = record[SendgridEmailCol]
+				entry.Type = "non_transactional"
 				entry.Description = fmt.Sprintf("SBL: imported from SendGrid")
 
 				entries = append(entries, entry)
@@ -398,7 +396,7 @@ func main() {
 						log.Fatalf("ERROR: %s\n\nFor additional information try using `--verbose true`\n\n\n", err)
 						return
 					}
-					entries = []sp.SuppressionEntry{}
+					entries = []sp.WritableSuppressionEntry{}
 					batchCount++
 				}
 

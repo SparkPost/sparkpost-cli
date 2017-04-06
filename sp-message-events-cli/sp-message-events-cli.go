@@ -19,7 +19,7 @@ func main() {
 	}
 
 	app := cli.NewApp()
-	app.Version = "0.0.1"
+	app.Version = "0.0.2"
 	app.Name = "sparkpost-message-event-cli"
 	app.Usage = "SparkPost Message Event CLI \n\n\tSee also https://developers.sparkpost.com/api/message-events.html#message-events-message-events-get"
 	app.Flags = []cli.Flag{
