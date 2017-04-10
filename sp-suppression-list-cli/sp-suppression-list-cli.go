@@ -173,22 +173,19 @@ func main() {
 			var err error
 			suppressionPage := &sp.SuppressionPage{}
 
-			if c.String("command") == "search" {
-				parameters := make(map[string]string)
-				parameters["cursor"] = "initial"
+			parameters := make(map[string]string)
+			parameters["cursor"] = "initial"
 
-				for i, val := range ValidParameters {
+			for i, val := range ValidParameters {
 
-					if c.String(ValidParameters[i]) != "" {
-						parameters[val] = c.String(val)
-					}
+				if c.String(ValidParameters[i]) != "" {
+					parameters[val] = c.String(val)
 				}
-
-				suppressionPage.Params = parameters
-				_, err = client.SuppressionSearch(suppressionPage)
-			} else {
-				_, err = client.SuppressionList(suppressionPage)
 			}
+
+			suppressionPage.Params = parameters
+			_, err = client.SuppressionSearch(suppressionPage)
+
 			if err != nil {
 				log.Fatalf("ERROR: %s\n\nFor additional information try using `--verbose true`\n\n\n", err)
 				return
