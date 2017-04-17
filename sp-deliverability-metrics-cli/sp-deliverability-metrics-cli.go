@@ -13,16 +13,16 @@ import (
 
 func main() {
 
-	VALID_PARAMETERS := []string{
+	validParameters := []string{
 		"from", "to", "domains", "campaigns", "templates", "nodes", "bindings",
 		"binding_groups", "protocols", "metrics", "timezone", "limit", "order_by", "subaccounts",
 	}
 
 	app := cli.NewApp()
 
-	app.Version = "0.0.1"
+	app.Version = "0.0.2"
 	app.Name = "sparkpost-message-event-cli"
-	app.Usage = "SparkPost Message Event CLI"
+	app.Usage = "SparkPost Message Event CLI\n\n\tSee https://developers.sparkpost.com/api/metrics.html"
 	app.Flags = []cli.Flag{
 		// Core Client Configuration
 		cli.StringFlag{
@@ -167,20 +167,23 @@ func main() {
 
 		parameters := make(map[string]string)
 
-		for i, val := range VALID_PARAMETERS {
+		for i, val := range validParameters {
 
-			if c.String(VALID_PARAMETERS[i]) != "" {
+			if c.String(validParameters[i]) != "" {
 				parameters[val] = c.String(val)
 			}
 		}
 
-		e, err := client.QueryDeliverabilityMetrics(c.String("command"), parameters)
+		m := &sp.Metrics{}
+		m.Params = parameters
+
+		e, err := client.QueryMetrics(m)
 
 		if err != nil {
 			log.Fatalf("ERROR: %s\n\nFor additional information try using `--verbose true`\n\n\n", err)
 			return
 		} else if e.Errors != nil {
-			log.Fatalf("ERROR: %s.\n\nFor additional information try using `--verbose true`\n\n\n", e.Errors)
+			log.Fatalf("ERROR: %q.\n\nFor additional information try using `--verbose true`\n\n\n", e.Errors)
 			return
 		} else {
 
@@ -191,9 +194,9 @@ func main() {
 			// TODO: add an HTML output
 			csvHeaderPrinter(fields)
 
-			for _, element := range e.Results {
-				csvEntryPrinter(fields, c.String("command"), element)
-
+			//log.Printf("DUMP: %q\n", m.Results)
+			for _, element := range m.Results {
+				csvEntryPrinter(fields, c.String("command"), &element)
 			}
 		}
 	}
@@ -201,24 +204,24 @@ func main() {
 
 }
 
-func csvEntryPrinter(fields []string, command string, event *sp.DeliverabilityMetricItem) {
+func csvEntryPrinter(fields []string, command string, metricItem *sp.MetricItem) {
 	row := ""
 
 	switch command {
 	case "domain":
-		row = fmt.Sprintf("%s%s, ", row, event.Domain)
+		row = fmt.Sprintf("%s%s, ", row, metricItem.Domain)
 	case "campaign":
-		row = fmt.Sprintf("%s%s, ", row, event.CampaignId)
+		row = fmt.Sprintf("%s%s, ", row, metricItem.CampaignId)
 	case "template":
-		row = fmt.Sprintf("%s%s, ", row, event.TemplateId)
+		row = fmt.Sprintf("%s%s, ", row, metricItem.TemplateId)
 	case "time-series":
-		row = fmt.Sprintf("%s%s, ", row, event.TimeStamp)
+		row = fmt.Sprintf("%s%s, ", row, metricItem.TimeStamp)
 	case "watched-domain":
-		row = fmt.Sprintf("%s%s, ", row, event.WatchedDomain)
+		row = fmt.Sprintf("%s%s, ", row, metricItem.WatchedDomain)
 	case "binding":
-		row = fmt.Sprintf("%s%s, ", row, event.Binding)
+		row = fmt.Sprintf("%s%s, ", row, metricItem.Binding)
 	case "binding-group":
-		row = fmt.Sprintf("%s%s, ", row, event.BindingGroup)
+		row = fmt.Sprintf("%s%s, ", row, metricItem.BindingGroup)
 	default:
 		row = fmt.Sprintf("%sUnknown Commnad[%s], ", row, command)
 	}
@@ -226,65 +229,65 @@ func csvEntryPrinter(fields []string, command string, event *sp.DeliverabilityMe
 	for i := range fields {
 		switch fields[i] {
 		case "count_injected":
-			row = fmt.Sprintf("%s%d, ", row, event.CountInjected)
+			row = fmt.Sprintf("%s%d, ", row, metricItem.CountInjected)
 		case "count_bounce":
-			row = fmt.Sprintf("%s%d, ", row, event.CountBounce)
+			row = fmt.Sprintf("%s%d, ", row, metricItem.CountBounce)
 		case "count_rejected":
-			row = fmt.Sprintf("%s%d, ", row, event.CountRejected)
+			row = fmt.Sprintf("%s%d, ", row, metricItem.CountRejected)
 		case "count_delivered":
-			row = fmt.Sprintf("%s%d, ", row, event.CountDelivered)
+			row = fmt.Sprintf("%s%d, ", row, metricItem.CountDelivered)
 		case "count_delivered_first":
-			row = fmt.Sprintf("%s%d, ", row, event.CountDeliveredFirst)
+			row = fmt.Sprintf("%s%d, ", row, metricItem.CountDeliveredFirst)
 		case "count_delivered_subsequent":
-			row = fmt.Sprintf("%s%d, ", row, event.CountDeliveredSubsequent)
+			row = fmt.Sprintf("%s%d, ", row, metricItem.CountDeliveredSubsequent)
 		case "total_delivery_time_first":
-			row = fmt.Sprintf("%s%d, ", row, event.TotalDeliveryTimeFirst)
+			row = fmt.Sprintf("%s%d, ", row, metricItem.TotalDeliveryTimeFirst)
 		case "total_delivery_time_subsequent":
-			row = fmt.Sprintf("%s%d, ", row, event.TotalDeliveryTimeSubsequent)
+			row = fmt.Sprintf("%s%d, ", row, metricItem.TotalDeliveryTimeSubsequent)
 		case "total_msg_volume":
-			row = fmt.Sprintf("%s%d, ", row, event.TotalMsgVolume)
+			row = fmt.Sprintf("%s%d, ", row, metricItem.TotalMsgVolume)
 		case "count_policy_rejection":
-			row = fmt.Sprintf("%s%d, ", row, event.CountPolicyRejection)
+			row = fmt.Sprintf("%s%d, ", row, metricItem.CountPolicyRejection)
 		case "count_generation_rejection":
-			row = fmt.Sprintf("%s%d, ", row, event.CountGenerationRejection)
+			row = fmt.Sprintf("%s%d, ", row, metricItem.CountGenerationRejection)
 		case "count_generation_failed":
-			row = fmt.Sprintf("%s%d, ", row, event.CountGenerationFailed)
+			row = fmt.Sprintf("%s%d, ", row, metricItem.CountGenerationFailed)
 		case "count_inband_bounce":
-			row = fmt.Sprintf("%s%d, ", row, event.CountInbandBounce)
+			row = fmt.Sprintf("%s%d, ", row, metricItem.CountInbandBounce)
 		case "count_outofband_bounce":
-			row = fmt.Sprintf("%s%d, ", row, event.CountOutofbandBounce)
+			row = fmt.Sprintf("%s%d, ", row, metricItem.CountOutofbandBounce)
 		case "count_soft_bounce":
-			row = fmt.Sprintf("%s%d, ", row, event.CountSoftBounce)
+			row = fmt.Sprintf("%s%d, ", row, metricItem.CountSoftBounce)
 		case "count_hard_bounce":
-			row = fmt.Sprintf("%s%d, ", row, event.CountHardBounce)
+			row = fmt.Sprintf("%s%d, ", row, metricItem.CountHardBounce)
 		case "count_block_bounce":
-			row = fmt.Sprintf("%s%d, ", row, event.CountBlockBounce)
+			row = fmt.Sprintf("%s%d, ", row, metricItem.CountBlockBounce)
 		case "count_admin_bounce":
-			row = fmt.Sprintf("%s%d, ", row, event.CountAdminBounce)
+			row = fmt.Sprintf("%s%d, ", row, metricItem.CountAdminBounce)
 		case "count_undetermined_bounce":
-			row = fmt.Sprintf("%s%d, ", row, event.CountUndeterminedBounce)
+			row = fmt.Sprintf("%s%d, ", row, metricItem.CountUndeterminedBounce)
 		case "count_delayed":
-			row = fmt.Sprintf("%s%d, ", row, event.CountDelayed)
+			row = fmt.Sprintf("%s%d, ", row, metricItem.CountDelayed)
 		case "count_delayed_first":
-			row = fmt.Sprintf("%s%d, ", row, event.CountDelayedFirst)
+			row = fmt.Sprintf("%s%d, ", row, metricItem.CountDelayedFirst)
 		case "count_rendered":
-			row = fmt.Sprintf("%s%d, ", row, event.CountRendered)
+			row = fmt.Sprintf("%s%d, ", row, metricItem.CountRendered)
 		case "count_unique_rendered":
-			row = fmt.Sprintf("%s%d, ", row, event.CountUniqueRendered)
+			row = fmt.Sprintf("%s%d, ", row, metricItem.CountUniqueRendered)
 		case "count_unique_confirmed_opened":
-			row = fmt.Sprintf("%s%d, ", row, event.CountUniqueConfirmedOpened)
+			row = fmt.Sprintf("%s%d, ", row, metricItem.CountUniqueConfirmedOpened)
 		case "count_clicked":
-			row = fmt.Sprintf("%s%d, ", row, event.CountClicked)
+			row = fmt.Sprintf("%s%d, ", row, metricItem.CountClicked)
 		case "count_unique_clicked":
-			row = fmt.Sprintf("%s%d, ", row, event.CountUniqueClicked)
+			row = fmt.Sprintf("%s%d, ", row, metricItem.CountUniqueClicked)
 		case "count_targeted":
-			row = fmt.Sprintf("%s%d, ", row, event.CountTargeted)
+			row = fmt.Sprintf("%s%d, ", row, metricItem.CountTargeted)
 		case "count_sent":
-			row = fmt.Sprintf("%s%d, ", row, event.CountSent)
+			row = fmt.Sprintf("%s%d, ", row, metricItem.CountSent)
 		case "count_accepted":
-			row = fmt.Sprintf("%s%d, ", row, event.CountAccepted)
+			row = fmt.Sprintf("%s%d, ", row, metricItem.CountAccepted)
 		case "count_spam_complaint":
-			row = fmt.Sprintf("%s%d, ", row, event.CountSpamComplaint)
+			row = fmt.Sprintf("%s%d, ", row, metricItem.CountSpamComplaint)
 		default:
 			row = fmt.Sprintf("unknown field: Invalid Field")
 

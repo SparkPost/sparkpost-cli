@@ -6,3 +6,6 @@ sp-suppression-list-cli
 sparkpost_cli.zip
 *.csv
 .idea
+
+**/.vscode
+**/debug

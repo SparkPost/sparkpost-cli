@@ -4,30 +4,31 @@ import (
 	"bufio"
 	"encoding/csv"
 	"fmt"
-	sp "github.com/SparkPost/gosparkpost"
-	"github.com/codegangsta/cli"
 	"io"
 	"log"
 	"os"
 	"strings"
+
+	sp "github.com/SparkPost/gosparkpost"
+	"github.com/codegangsta/cli"
 )
 
 // Column mapping for Mandrill Blacklist
 const (
-	MANDRILL_EMAIL_COL       = 0
-	MANDRILL_REASON_COL      = 1
-	MANDRILL_DETAIL_COL      = 2
-	MANDRILL_CREATED_COL     = 3
-	MANDRILL_EXPIRES_AT_COL  = 4
-	MANDRILL_LAST_EVENT_COL  = 5
-	MANDRILL_EXPIRES_AT2_COL = 6
-	MANDRILL_SUBACCOUNT_COL  = 7
+	MandrillEmailCol      = 0
+	MandrillReasonCol     = 1
+	MandrillDetailCol     = 2
+	MandrillCreatedCol    = 3
+	MandrillExpiresAtCol  = 4
+	MandrillLastEventCol  = 5
+	MandrillExpiresAt2Col = 6
+	MandrillSubAccountCol = 7
 )
 
 // Column mapping for SendGrid Blacklist
 const (
-	SENDGRID_EMAIL_COL = 0
-	SENDGRID_CREATED   = 1
+	SendgridEmailCol = 0
+	SendgridCreated  = 1
 )
 
 func check(e error) {
@@ -38,15 +39,15 @@ func check(e error) {
 
 func main() {
 
-	VALID_PARAMETERS := []string{
-		"from", "to", "types", "limit",
+	ValidParameters := []string{
+		"to", "from", "domain", "cursor", "limit", "per_page", "page", "sources", "types", "description",
 	}
 
 	app := cli.NewApp()
 
-	app.Version = "0.0.1"
+	app.Version = "0.0.2"
 	app.Name = "suppression-sparkpost-cli"
-	app.Usage = "SparkPost suppression list cli"
+	app.Usage = "SparkPost suppression list cli\n\n\tSee https://developers.sparkpost.com/api/suppression-list.html"
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:   "baseurl, u",
@@ -102,6 +103,36 @@ func main() {
 			Value: "",
 			Usage: "Optional maximum number of results to return. Must be between 1 and 100000. Default value is 100000",
 		},
+		cli.StringFlag{
+			Name:  "page",
+			Value: "",
+			Usage: "Optional results page number to return. Used with per_page for paging through result. Example: 25. Default: 1",
+		},
+		cli.StringFlag{
+			Name:  "per_page",
+			Value: "",
+			Usage: "Optional number of results to return per page. Must be between 1 and 10,000 (inclusive). Example: 100. Default: 1000.",
+		},
+		cli.StringFlag{
+			Name:  "cursor",
+			Value: "",
+			Usage: "Optional the results cursor location to return, to start paging with cursor, use the value of ‘initial’. When cursor is provided the page parameter is ignored. ( Note: SparkPost only). Example initial",
+		},
+		cli.StringFlag{
+			Name:  "domain",
+			Value: "",
+			Usage: "Domain of entries to include in the search. ( Note: SparkPost only). Example yahoo.com",
+		},
+		cli.StringFlag{
+			Name:  "sources",
+			Value: "",
+			Usage: "Types of entries to include in the search, i.e. entries that are transactional or non_transactional",
+		},
+		cli.StringFlag{
+			Name:  "description",
+			Value: "",
+			Usage: "Description of the entries to include in the search, i.e descriptions that include the text submitted. ( Note: SparkPost only)",
+		},
 	}
 	app.Action = func(c *cli.Context) {
 
@@ -131,23 +162,61 @@ func main() {
 
 		parameters := make(map[string]string)
 
-		for i, val := range VALID_PARAMETERS {
-
-			if c.String(VALID_PARAMETERS[i]) != "" {
+		for i, val := range ValidParameters {
+			if c.String(ValidParameters[i]) != "" {
 				parameters[val] = c.String(val)
 			}
 		}
 
 		switch c.String("command") {
-		case "list":
-			e, err := client.SuppressionList()
+		case "list", "search":
+			var err error
+			suppressionPage := &sp.SuppressionPage{}
+
+			parameters := make(map[string]string)
+			parameters["cursor"] = "initial"
+
+			for i, val := range ValidParameters {
+
+				if c.String(ValidParameters[i]) != "" {
+					parameters[val] = c.String(val)
+				}
+			}
+
+			suppressionPage.Params = parameters
+			_, err = client.SuppressionSearch(suppressionPage)
 
 			if err != nil {
 				log.Fatalf("ERROR: %s\n\nFor additional information try using `--verbose true`\n\n\n", err)
 				return
-			} else {
-				csvEntryPrinter(e, true)
+			}
 
+			for {
+
+				if suppressionPage.Errors != nil {
+					log.Fatalf("Error: %v\n For additional information try using `--verbose true`\n", suppressionPage.Errors)
+					break
+				}
+
+				csvEntryPrinter(suppressionPage, true)
+
+				// If user requested a specific page don't page through rest of results
+				if c.String("page") != "" {
+					return
+				}
+
+				if suppressionPage.NextPage == "" {
+					return
+				}
+
+				if isVerbose {
+					log.Printf("NextPage(): %s", suppressionPage.NextPage)
+				}
+				suppressionPage, _, err = suppressionPage.Next()
+				if err != nil {
+					log.Fatalf("ERROR: %s\n\nFor additional information try using `--verbose true`\n\n\n", err)
+					return
+				}
 			}
 		case "retrieve":
 			recpipient := c.String("recipient")
@@ -156,34 +225,15 @@ func main() {
 				return
 			}
 
-			e, err := client.SuppressionRetrieve(recpipient)
+			suppressionPage := &sp.SuppressionPage{}
+			_, err := client.SuppressionRetrieve(recpipient, suppressionPage)
 
 			if err != nil {
 				log.Fatalf("ERROR: %s\n\nFor additional information try using `--verbose true`\n\n\n", err)
 				return
-			} else {
-				csvEntryPrinter(e, false)
-
 			}
-		case "search":
-			parameters := make(map[string]string)
+			csvEntryPrinter(suppressionPage, false)
 
-			for i, val := range VALID_PARAMETERS {
-
-				if c.String(VALID_PARAMETERS[i]) != "" {
-					parameters[val] = c.String(val)
-				}
-			}
-
-			e, err := client.SuppressionSearch(parameters)
-
-			if err != nil {
-				log.Fatalf("ERROR: %s\n\nFor additional information try using `--verbose true`\n\n\n", err)
-				return
-			} else {
-				csvEntryPrinter(e, true)
-
-			}
 		case "delete":
 			recpipient := c.String("recipient")
 			if recpipient == "" {
@@ -196,10 +246,9 @@ func main() {
 			if err != nil {
 				log.Fatalf("ERROR: %s\n\nFor additional information try using `--verbose true`\n\n\n", err)
 				return
-			} else {
-				fmt.Println("OK")
-
 			}
+			fmt.Println("OK")
+
 		case "mandrill":
 			fmt.Printf("Processing: %s\n", c.String("file"))
 			file := c.String("file")
@@ -211,7 +260,7 @@ func main() {
 			f, err := os.Open(file)
 			check(err)
 
-			var entries = []sp.SuppressionEntry{}
+			var entries = []sp.WritableSuppressionEntry{}
 
 			batchCount := 1
 
@@ -230,59 +279,58 @@ func main() {
 					return
 				}
 
-				if record[MANDRILL_EMAIL_COL] == "email" {
+				if record[MandrillEmailCol] == "email" {
 					// Skip over header row
 					continue
 				}
 
-				if record[MANDRILL_REASON_COL] != "hard-bounce" {
+				if record[MandrillReasonCol] != "hard-bounce" {
 					// Ignore soft-bounce
 					continue
 				}
 
-				if strings.Count(record[MANDRILL_EMAIL_COL], "@") != 1 {
-					fmt.Printf("WARN: Ignoring '%s'. It is not a valid email address.\n", record[MANDRILL_EMAIL_COL])
+				if strings.Count(record[MandrillEmailCol], "@") != 1 {
+					fmt.Printf("WARN: Ignoring '%s'. It is not a valid email address.\n", record[MandrillEmailCol])
 					continue
 				}
 
-				entry := sp.SuppressionEntry{}
+				entry := sp.WritableSuppressionEntry{}
 
-				if record[MANDRILL_EMAIL_COL] == "" {
+				if record[MandrillEmailCol] == "" {
 					// Must have email as it is suppression list primary key
 					continue
 				}
 
-				entry.Email = record[MANDRILL_EMAIL_COL]
-				entry.Transactional = false
-				entry.NonTransactional = true
-				entry.Description = fmt.Sprintf("MBL: %s", record[MANDRILL_DETAIL_COL])
+				entry.Recipient = record[MandrillEmailCol]
+				entry.Type = "non_transactional"
+				entry.Description = fmt.Sprintf("MBL: %s", record[MandrillDetailCol])
 
 				entries = append(entries, entry)
 
 				if len(entries) > (1024 * 100) {
 					fmt.Printf("Uploading batch %d\n", batchCount)
-					err = client.SuppressionInsertOrUpdate(entries)
+					_, err := client.SuppressionUpsert(entries)
 
 					if err != nil {
 						log.Fatalf("ERROR: %s\n\nFor additional information try using `--verbose true`\n\n\n", err)
 						return
 					}
-					entries = []sp.SuppressionEntry{}
+					entries = []sp.WritableSuppressionEntry{}
 					batchCount++
 				}
 			}
 
 			if len(entries) > 0 {
 				fmt.Printf("Uploading batch %d\n", batchCount)
-				err = client.SuppressionInsertOrUpdate(entries)
+				_, err := client.SuppressionUpsert(entries)
 
 				if err != nil {
 					log.Fatalf("ERROR: %s\n\nFor additional information try using `--verbose true`\n\n\n", err)
 					return
-				} 
+				}
 			}
 			fmt.Println("DONE")
-			
+
 		case "sendgrid":
 			file := c.String("file")
 			if file == "" {
@@ -293,7 +341,7 @@ func main() {
 			f, err := os.Open(file)
 			check(err)
 
-			var entries = []sp.SuppressionEntry{}
+			var entries = []sp.WritableSuppressionEntry{}
 
 			batchCount := 1
 
@@ -312,41 +360,40 @@ func main() {
 					return
 				}
 
-				if record[SENDGRID_EMAIL_COL] == "email" {
+				if record[SendgridEmailCol] == "email" {
 					// Skip over header row
 					continue
 				}
 
-				entry := sp.SuppressionEntry{}
+				entry := sp.WritableSuppressionEntry{}
 
-				if record[SENDGRID_EMAIL_COL] == "" {
+				if record[SendgridEmailCol] == "" {
 					// Must have email as it is suppression list primary key
 					continue
 				}
 
 				// SendGrid suppression lists are very dirty and tend to have invalid data. Some examples of invalid addresses are:
 				// 	#02232014, gmail.com, To, 8/27/2015, name@yahoo.comett@domain.com"
-				if strings.Count(record[MANDRILL_EMAIL_COL], "@") != 1 {
-					fmt.Printf("WARN: Ignoring '%s'. It is not a valid email address.\n", record[MANDRILL_EMAIL_COL])
+				if strings.Count(record[SendgridEmailCol], "@") != 1 {
+					fmt.Printf("WARN: Ignoring '%s'. It is not a valid email address.\n", record[SendgridEmailCol])
 					continue
 				}
 
-				entry.Email = record[SENDGRID_EMAIL_COL]
-				entry.Transactional = false
-				entry.NonTransactional = true
+				entry.Recipient = record[SendgridEmailCol]
+				entry.Type = "non_transactional"
 				entry.Description = fmt.Sprintf("SBL: imported from SendGrid")
 
 				entries = append(entries, entry)
 
 				if len(entries) > (1024 * 100) {
 					fmt.Printf("Uploading batch %d\n", batchCount)
-					err = client.SuppressionInsertOrUpdate(entries)
+					_, err := client.SuppressionUpsert(entries)
 
 					if err != nil {
 						log.Fatalf("ERROR: %s\n\nFor additional information try using `--verbose true`\n\n\n", err)
 						return
 					}
-					entries = []sp.SuppressionEntry{}
+					entries = []sp.WritableSuppressionEntry{}
 					batchCount++
 				}
 
@@ -354,7 +401,7 @@ func main() {
 
 			if len(entries) > 0 {
 				fmt.Printf("Uploading batch %d\n", batchCount)
-				err = client.SuppressionInsertOrUpdate(entries)
+				_, err := client.SuppressionUpsert(entries)
 
 				if err != nil {
 					log.Fatalf("ERROR: %s\n\nFor additional information try using `--verbose true`\n\n\n", err)
@@ -374,8 +421,8 @@ func main() {
 
 }
 
-func csvEntryPrinter(suppressionList *sp.SuppressionListWrapper, summary bool) {
-	entries := suppressionList.Results
+func csvEntryPrinter(suppressionPage *sp.SuppressionPage, summary bool) {
+	entries := suppressionPage.Results
 
 	if summary {
 		fmt.Printf("Recipient, Transactional, NonTransactional, Source, Updated, Created\n")
