@@ -9,6 +9,12 @@
 
 The official SparkPost CLI for the [SparkPost API](https://www.sparkpost.com/api).
 
+## Running the released version
+
+* Retrieve the latest `sparkpost_cli.zip` from [here](https://github.com/SparkPost/sparkpost-cli/releases)
+* Unzip `sparkpost_cli.zip`
+* Set up your [environment](#environment) (or pass values as command line arguments)
+* run the binary for your platform
 
 ## Environment
 
